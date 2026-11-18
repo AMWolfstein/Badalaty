@@ -68,7 +68,6 @@ class SettingsPage extends ConsumerWidget {
             for (final (kind, label) in [
               ('client', l.clients),
               ('employee', l.colleagues),
-              ('team', l.teams),
             ])
               ChoiceChip(
                 label: Text(label),
@@ -78,46 +77,34 @@ class SettingsPage extends ConsumerWidget {
           ],
         ),
         GlassHeading(
-          switch (_directoryKind) {
-            'client' => l.clients,
-            'employee' => l.colleagues,
-            _ => l.teams,
-          },
+          _directoryKind == 'client' ? l.clients : l.colleagues,
           action: FilledButton.icon(
             icon: const Icon(Icons.add, size: 16),
             label: Text(l.add),
-            onPressed: () => editDirectory(
-              context,
-              ref,
-              _directoryKind,
-              employees: records
-                  .ofKind('employee')
-                  .where((r) => r['archived'] != true)
-                  .toList(),
-            ),
+            onPressed: () => editDirectory(context, _directoryKind),
           ),
         ),
         for (final record in records.ofKind(_directoryKind))
           ListTile(
-            leading: GlassIcon(switch (_directoryKind) {
-              'client' => Icons.business_outlined,
-              'employee' => Icons.person_outline,
-              _ => Icons.groups_outlined,
-            }),
+            leading: GlassIcon(
+              _directoryKind == 'client'
+                  ? Icons.business_outlined
+                  : Icons.person_outline,
+            ),
             title: Text(record['name'] as String),
-            subtitle: Text(
-              [
-                if (record['code'] != null) record['code'],
-                if (record['archived'] == true) l.archived,
-              ].join(' · '),
-            ),
-            onTap: () => editDirectory(
-              context,
-              ref,
-              _directoryKind,
-              previous: record,
-              employees: records.ofKind('employee').toList(),
-            ),
+            subtitle:
+                record['archived'] == true ||
+                    (record['code'] as String? ?? '').isNotEmpty
+                ? Text(
+                    [
+                      if ((record['code'] as String? ?? '').isNotEmpty)
+                        record['code'],
+                      if (record['archived'] == true) l.archived,
+                    ].join(' · '),
+                  )
+                : null,
+            onTap: () =>
+                editDirectory(context, _directoryKind, previous: record),
             trailing: IconButton(
               tooltip: record['archived'] == true ? l.unarchive : l.archive,
               icon: Icon(

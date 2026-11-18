@@ -8,22 +8,19 @@ import '../l10n/labels.dart';
 
 Future<int?> editDirectory(
   BuildContext context,
-  WidgetRef ref,
   String kind, {
   Record? previous,
-  List<Record> employees = const [],
 }) {
   return showDialog<int>(
     context: context,
-    builder: (_) => _DirectoryEditor(kind, previous, employees),
+    builder: (_) => _DirectoryEditor(kind, previous),
   );
 }
 
 class _DirectoryEditor extends ConsumerStatefulWidget {
-  const _DirectoryEditor(this.kind, this.previous, this.employees);
+  const _DirectoryEditor(this.kind, this.previous);
   final String kind;
   final Record? previous;
-  final List<Record> employees;
   @override
   ConsumerState<_DirectoryEditor> createState() => _DirectoryEditorState();
 }
@@ -35,9 +32,6 @@ class _DirectoryEditorState extends ConsumerState<_DirectoryEditor> {
   late final code = TextEditingController(
     text: widget.previous?['code'] as String?,
   );
-  late Set<int> members = Set<int>.from(
-    widget.previous?['members'] as List? ?? [],
-  );
   bool busy = false;
 
   @override
@@ -48,8 +42,8 @@ class _DirectoryEditorState extends ConsumerState<_DirectoryEditor> {
   }
 
   Future<void> save() async {
-    if (name.text.trim().isEmpty ||
-        (widget.kind == 'employee' && code.text.trim().isEmpty)) {
+    final employeeId = code.text.trim();
+    if (name.text.trim().isEmpty) {
       feedback(context, context.l.missingFields);
       return;
     }
@@ -58,8 +52,8 @@ class _DirectoryEditorState extends ConsumerState<_DirectoryEditor> {
       final id = await ref.read(storeProvider).save(widget.kind, {
         ...?widget.previous,
         'name': name.text.trim(),
-        if (widget.kind == 'employee') 'code': code.text.trim(),
-        if (widget.kind == 'team') 'members': members.toList(),
+        if (widget.kind == 'employee')
+          'code': employeeId.isEmpty ? null : employeeId,
       }, id: widget.previous?['id'] as int?);
       ref.invalidate(recordsProvider);
       if (mounted) Navigator.pop(context, id);
@@ -76,26 +70,17 @@ class _DirectoryEditorState extends ConsumerState<_DirectoryEditor> {
     title: Text(
       widget.previous != null
           ? context.l.edit
-          : switch (widget.kind) {
-              'client' => context.l.addClient,
-              'employee' => context.l.addColleague,
-              _ => context.l.teams,
-            },
+          : widget.kind == 'client'
+          ? context.l.addClient
+          : context.l.addColleague,
     ),
     content: SingleChildScrollView(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           field(name, context.l.name),
-          if (widget.kind == 'employee') field(code, context.l.employeeId),
-          if (widget.kind == 'team')
-            SearchRecords(
-              context.l.colleagues,
-              widget.employees,
-              members,
-              onPick: (value) => setState(() => members = value),
-              multiple: true,
-            ),
+          if (widget.kind == 'employee')
+            field(code, context.l.employeeIdOptional),
         ],
       ),
     ),

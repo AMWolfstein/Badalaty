@@ -159,6 +159,51 @@ void main() {
     },
   );
 
+  test(
+    'exports name-only colleagues with blank IDs and separate rows',
+    () async {
+      final client = await store.save('client', {'name': 'Company A'});
+      final first = await store.save('employee', {'name': 'Sam'});
+      final second = await store.save('employee', {
+        'name': 'Sam',
+        'code': null,
+      });
+      await store.save('entry', {
+        'day': '2026-11-18',
+        'client': client,
+        'clientName': 'Company A',
+        'category': 'shared',
+        'base': 120,
+        'people': [
+          {'id': 0, 'name': 'Owner', 'code': '0012'},
+          {'id': first, 'name': 'Sam'},
+          {'id': second, 'name': 'Sam', 'code': null},
+        ],
+      });
+
+      final records = await store.readAll();
+      final zip = ZipDecoder().decodeBytes(
+        workbook(records.entries.toList(), AppLocalizationsEn(), '2026-11'),
+      );
+      final summary = utf8.decode(
+        zip.findFile('xl/worksheets/sheet5.xml')!.content,
+      );
+      expect(RegExp('>Sam<').allMatches(summary), hasLength(2));
+      for (final row in [4, 5]) {
+        expect(
+          summary,
+          contains(
+            '<c r="A$row" t="inlineStr"><is><t xml:space="preserve"></t>',
+          ),
+        );
+      }
+      final distribution = utf8.decode(
+        zip.findFile('xl/worksheets/sheet2.xml')!.content,
+      );
+      expect(RegExp('>Sam<').allMatches(distribution), hasLength(2));
+    },
+  );
+
   test('backup preserves IDs and rolls back if a staged write fails', () async {
     final id = await store.save('client', {'name': 'Original'});
     final saved = await store.backup();

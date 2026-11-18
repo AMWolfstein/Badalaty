@@ -133,13 +133,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get employeeId => 'الرقم الوظيفي';
 
   @override
+  String get employeeIdOptional => 'الرقم الوظيفي (اختياري)';
+
+  @override
   String get colleagues => 'الزملاء';
 
   @override
   String get clients => 'العملاء';
-
-  @override
-  String get teams => 'الفرق المحفوظة';
 
   @override
   String get profile => 'الملف الشخصي';
@@ -391,7 +391,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get dataSettingsSection => 'البيانات والتطبيق';
 
   @override
-  String get directoryTitle => 'العملاء والزملاء والفرق';
+  String get directoryTitle => 'العملاء والزملاء';
 
   @override
   String get tripDetailsTitle => 'تفاصيل المأمورية';

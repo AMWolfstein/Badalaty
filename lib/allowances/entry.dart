@@ -214,9 +214,6 @@ class _EntryState extends ConsumerState<EntryPage> {
               .where(
                 (r) => r['archived'] != true || participants.contains(r['id']),
               );
-          final teams = records
-              .ofKind('team')
-              .where((r) => r['archived'] != true);
           return PopScope(
             canPop: !dirty && !busy,
             onPopInvokedWithResult: (didPop, _) async {
@@ -275,7 +272,6 @@ class _EntryState extends ConsumerState<EntryPage> {
                                     onPressed: () async {
                                       final id = await editDirectory(
                                         context,
-                                        ref,
                                         'client',
                                       );
                                       if (id != null && mounted) {
@@ -374,7 +370,6 @@ class _EntryState extends ConsumerState<EntryPage> {
                                 onPressed: () async {
                                   final id = await editDirectory(
                                     context,
-                                    ref,
                                     'employee',
                                   );
                                   if (id != null && mounted) {
@@ -384,25 +379,6 @@ class _EntryState extends ConsumerState<EntryPage> {
                               ),
                             ],
                           ),
-                          if (teams.isNotEmpty)
-                            Choice<int>(
-                              l.teams,
-                              0,
-                              {
-                                0: l.none,
-                                for (final team in teams)
-                                  team['id'] as int: team['name'] as String,
-                              },
-                              (value) => change(() {
-                                final activeIds = employees
-                                    .map((r) => r['id'])
-                                    .toSet();
-                                participants = Set<int>.from(
-                                  records.byId(value)?['members'] as List? ??
-                                      [],
-                                ).where(activeIds.contains).toSet();
-                              }),
-                            ),
                           if (split != null)
                             ListTile(
                               title: Text(l.total),
