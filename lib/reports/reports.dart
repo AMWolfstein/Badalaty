@@ -8,6 +8,7 @@ import '../forms.dart';
 import '../l10n/app_localizations.dart';
 import '../l10n/labels.dart';
 import 'workbook.dart';
+import '../widgets/glass_navigation_bar.dart';
 
 class ReportsPage extends StatefulWidget {
   const ReportsPage(this.records, {super.key});
@@ -40,7 +41,7 @@ class _ReportsState extends State<ReportsPage> {
         )
         .toList();
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: sectionListPadding(context),
       children: [
         DayField(l.start, start, (v) => setState(() => start = v)),
         DayField(l.end, end, (v) => setState(() => end = v)),
