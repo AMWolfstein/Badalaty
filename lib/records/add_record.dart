@@ -31,7 +31,7 @@ class AddRecordPage extends StatelessWidget {
                   subtitle: Text(
                     '${status == 'leave' ? l.leaveRecordDescription : l.officeRecordDescription} · ${context.money(0)}',
                   ),
-                  trailing: const Icon(Icons.navigate_next),
+                  trailing: const Icon(Icons.chevron_right),
                   onTap: () => context.push('/record/$status'),
                 ),
               ),
@@ -40,7 +40,7 @@ class AddRecordPage extends StatelessWidget {
                 leading: const GlassIcon(Icons.account_balance_wallet_outlined),
                 title: Text(l.allowanceOption),
                 subtitle: Text(l.allowanceOptionDescription),
-                trailing: const Icon(Icons.navigate_next),
+                trailing: const Icon(Icons.chevron_right),
                 onTap: () => context.push('/allowances/add'),
               ),
             ),

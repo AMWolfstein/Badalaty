@@ -312,11 +312,7 @@ class SettingsPage extends ConsumerWidget {
     leading: GlassIcon(icon),
     title: Text(title),
     subtitle: subtitle == null ? null : Text(subtitle),
-    trailing: Icon(
-      Directionality.of(context) == TextDirection.rtl
-          ? Icons.chevron_left
-          : Icons.chevron_right,
-    ),
+    trailing: const Icon(Icons.chevron_right),
     onTap: () {
       var kind = 'client';
       Navigator.of(context).push<void>(
