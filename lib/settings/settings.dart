@@ -13,6 +13,7 @@ import '../forms.dart';
 import '../l10n/labels.dart';
 import '../widgets/platform.dart';
 import 'directory.dart';
+import '../widgets/glass_navigation_bar.dart';
 
 class SettingsPage extends ConsumerWidget {
   const SettingsPage(this.records, {super.key});
@@ -41,7 +42,7 @@ class SettingsPage extends ConsumerWidget {
       minute: settings['minute'] as int? ?? 0,
     );
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: sectionListPadding(context),
       children: [
         Choice(l.language, settings['language'] as String? ?? 'system', {
           'system': l.system,

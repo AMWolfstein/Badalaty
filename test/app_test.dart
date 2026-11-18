@@ -1,6 +1,7 @@
 import 'package:badalaty/data/state.dart';
 import 'package:badalaty/data/store.dart';
 import 'package:badalaty/main.dart';
+import 'package:badalaty/widgets/glass_navigation_bar.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -68,4 +69,71 @@ void main() {
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox());
   });
+
+  testWidgets(
+    'floating tabs follow locale and leave the last setting reachable',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(320, 640));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      tester.binding.platformDispatcher.textScaleFactorTestValue = 1.3;
+      addTearDown(
+        tester.binding.platformDispatcher.clearTextScaleFactorTestValue,
+      );
+      final db = Store(NativeDatabase.memory());
+      addTearDown(db.close);
+      final id = await db.save('settings', {'language': 'en'});
+      final container = ProviderContainer(
+        overrides: [storeProvider.overrideWithValue(db)],
+      );
+      addTearDown(container.dispose);
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: const BadalatyApp(),
+        ),
+      );
+      await tester.runAsync(() => container.read(recordsProvider.future));
+      await tester.pumpAndSettle();
+
+      final bar = find.byType(GlassNavigationBar);
+      Finder tab(String title) =>
+          find.descendant(of: bar, matching: find.text(title));
+      expect(
+        tester.getCenter(tab('Home')).dx,
+        lessThan(tester.getCenter(tab('Settings')).dx),
+      );
+      expect(tester.widget<GlassNavigationBar>(bar).selectedIndex, 0);
+
+      await tester.runAsync(
+        () => db.save('settings', {'language': 'ar', 'theme': 'dark'}, id: id),
+      );
+      container.invalidate(recordsProvider);
+      await tester.runAsync(() => container.read(recordsProvider.future));
+      await tester.pumpAndSettle();
+      expect(
+        tester.getCenter(tab('الرئيسية')).dx,
+        greaterThan(tester.getCenter(tab('الإعدادات')).dx),
+      );
+
+      await tester.tap(tab('الإعدادات'));
+      await tester.pumpAndSettle();
+      expect(tester.widget<GlassNavigationBar>(bar).selectedIndex, 4);
+      expect(find.widgetWithText(AppBar, 'الإعدادات'), findsOneWidget);
+
+      final restore = find.widgetWithText(ListTile, 'استعادة نسخة احتياطية');
+      await tester.scrollUntilVisible(restore, 180);
+      await tester.drag(find.byType(ListView), const Offset(0, -180));
+      await tester.pumpAndSettle();
+      final glass = find.descendant(
+        of: bar,
+        matching: find.byType(BackdropFilter),
+      );
+      expect(
+        tester.getBottomLeft(restore).dy,
+        lessThan(tester.getTopLeft(glass).dy),
+      );
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
 }

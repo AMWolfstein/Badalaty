@@ -9,6 +9,7 @@ import '../data/store.dart';
 import '../forms.dart';
 import '../home/home.dart';
 import '../l10n/labels.dart';
+import '../widgets/glass_navigation_bar.dart';
 
 String statusOf(List<Record> records, String day, String today) {
   final override = records
@@ -61,7 +62,7 @@ class _HistoryState extends ConsumerState<HistoryPage> {
               .contains(search),
     );
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: sectionListPadding(context),
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,

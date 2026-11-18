@@ -6,6 +6,7 @@ import '../data/state.dart';
 import '../data/store.dart';
 import '../forms.dart';
 import '../l10n/labels.dart';
+import '../widgets/glass_navigation_bar.dart';
 
 const categoryIcons = {
   'shared': Icons.groups_outlined,
@@ -28,7 +29,7 @@ class HomePage extends StatelessWidget {
     });
     final trip = records.activeOn(day);
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: sectionListPadding(context),
       children: [
         Container(
           padding: const EdgeInsets.all(22),

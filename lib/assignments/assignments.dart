@@ -7,6 +7,7 @@ import '../data/state.dart';
 import '../data/store.dart';
 import '../forms.dart';
 import '../l10n/labels.dart';
+import '../widgets/glass_navigation_bar.dart';
 
 const tripStatuses = ['planned', 'active', 'completed', 'cancelled'];
 
@@ -16,7 +17,7 @@ class AssignmentsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ListView(
-    padding: const EdgeInsets.all(16),
+    padding: sectionListPadding(context),
     children: [
       FilledButton.icon(
         onPressed: () => context.push('/assignment/new'),

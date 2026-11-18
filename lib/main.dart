@@ -19,6 +19,7 @@ import 'l10n/app_localizations.dart';
 import 'l10n/labels.dart';
 import 'reports/reports.dart';
 import 'settings/settings.dart';
+import 'widgets/glass_navigation_bar.dart';
 import 'widgets/platform.dart';
 
 void main() => runApp(const ProviderScope(child: BadalatyApp()));
@@ -187,15 +188,15 @@ class _Frame extends StatelessWidget {
     ];
     final current = _sections.indexOf(path);
     return Scaffold(
+      extendBody: true,
       appBar: AppBar(title: Text(current == 0 ? l.title : labels[current])),
       body: SafeArea(bottom: false, child: child),
-      bottomNavigationBar: NavigationBar(
+      bottomNavigationBar: GlassNavigationBar(
         selectedIndex: current,
-        labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
-        onDestinationSelected: (index) => context.go(_sections[index]),
+        onSelected: (index) => context.go(_sections[index]),
         destinations: [
           for (var i = 0; i < labels.length; i++)
-            NavigationDestination(icon: Icon(icons[i]), label: labels[i]),
+            (icon: icons[i], label: labels[i]),
         ],
       ),
     );
