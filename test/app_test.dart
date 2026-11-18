@@ -213,4 +213,80 @@ void main() {
       await tester.pumpWidget(const SizedBox());
     },
   );
+
+  for (final (locale, choose, allowance, history, settings, rtl) in [
+    ('en', 'Add entry', 'Allowance', 'History', 'Settings', false),
+    ('ar', 'إضافة سجل', 'بدل', 'السجلات', 'الإعدادات', true),
+  ]) {
+    testWidgets(
+      'navigation arrows render in the correct direction in $locale',
+      (tester) async {
+        final db = Store(NativeDatabase.memory());
+        addTearDown(db.close);
+        await db.save('settings', {'language': locale});
+        final state = ProviderContainer(
+          overrides: [storeProvider.overrideWithValue(db)],
+        );
+        addTearDown(state.dispose);
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: state,
+            child: const BadalatyApp(),
+          ),
+        );
+        await tester.runAsync(() => state.read(recordsProvider.future));
+        await tester.pumpAndSettle();
+
+        void expectDirection(Finder icons, int count) {
+          expect(icons, findsNWidgets(count));
+          final mirrors = find.descendant(
+            of: icons,
+            matching: find.byWidgetPredicate(
+              (widget) =>
+                  widget is Transform && widget.transform.entry(0, 0) == -1,
+            ),
+          );
+          expect(mirrors, findsNWidgets(rtl ? count : 0));
+        }
+
+        await tester.tap(find.widgetWithText(FilledButton, choose));
+        await tester.pumpAndSettle();
+        expectDirection(find.byIcon(Icons.chevron_right), 3);
+        expectDirection(
+          find.descendant(
+            of: find.byType(AppBar),
+            matching: find.byIcon(Icons.arrow_back),
+          ),
+          1,
+        );
+        await tester.tap(find.widgetWithText(ListTile, allowance));
+        await tester.pumpAndSettle();
+        expectDirection(find.byIcon(Icons.chevron_right), 3);
+
+        for (var i = 0; i < 2; i++) {
+          await tester.binding.handlePopRoute();
+          await tester.pumpAndSettle();
+        }
+        Finder tab(String text) => find.descendant(
+          of: find.byType(GlassNavigationBar),
+          matching: find.text(text),
+        );
+        await tester.tap(tab(history));
+        await tester.pumpAndSettle();
+        final previous = find.byIcon(Icons.arrow_back);
+        final next = find.byIcon(Icons.arrow_forward);
+        expectDirection(previous, 1);
+        expectDirection(next, 1);
+        expect(tester.getCenter(previous).dx > tester.getCenter(next).dx, rtl);
+
+        await tester.tap(tab(settings));
+        await tester.pumpAndSettle();
+        final disclosures = find.byIcon(Icons.chevron_right);
+        await tester.scrollUntilVisible(disclosures.first, 120);
+        expectDirection(disclosures.first, 1);
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox());
+      },
+    );
+  }
 }

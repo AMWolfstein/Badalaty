@@ -139,11 +139,7 @@ class AddEntryPage extends StatelessWidget {
                   Category.travel => l.travelDescription,
                   Category.ride => l.rideDescription,
                 }),
-                trailing: Icon(
-                  Directionality.of(context) == TextDirection.rtl
-                      ? Icons.chevron_left
-                      : Icons.chevron_right,
-                ),
+                trailing: const Icon(Icons.chevron_right),
                 onTap: () => context.pushReplacement('/entry/${category.name}'),
               ),
             ),

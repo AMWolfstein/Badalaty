@@ -79,7 +79,8 @@ class _HistoryState extends ConsumerState<HistoryPage> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     IconButton(
-                      tooltip: l.start,
+                      tooltip: MaterialLocalizations.of(context)
+                          .previousMonthTooltip,
                       onPressed: () => setState(() {
                         month = DateTime(month.year, month.month - 1);
                         pickedDay = null;
@@ -93,7 +94,8 @@ class _HistoryState extends ConsumerState<HistoryPage> {
                       ),
                     ),
                     IconButton(
-                      tooltip: l.end,
+                      tooltip: MaterialLocalizations.of(context)
+                          .nextMonthTooltip,
                       onPressed: () => setState(() {
                         month = DateTime(month.year, month.month + 1);
                         pickedDay = null;
