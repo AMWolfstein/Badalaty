@@ -859,6 +859,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add assignment'**
   String get newAssignmentTitle;
+
+  /// No description provided for @fromDate.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get fromDate;
+
+  /// No description provided for @toDate.
+  ///
+  /// In en, this message translates to:
+  /// **'To'**
+  String get toDate;
+
+  /// No description provided for @allClients.
+  ///
+  /// In en, this message translates to:
+  /// **'All clients'**
+  String get allClients;
+
+  /// No description provided for @allAssignments.
+  ///
+  /// In en, this message translates to:
+  /// **'All assignments'**
+  String get allAssignments;
+
+  /// No description provided for @allCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'All types'**
+  String get allCategories;
+
+  /// No description provided for @periodAllowance.
+  ///
+  /// In en, this message translates to:
+  /// **'Total allowance for the period'**
+  String get periodAllowance;
+
+  /// No description provided for @allowanceBreakdown.
+  ///
+  /// In en, this message translates to:
+  /// **'Breakdown by allowance type'**
+  String get allowanceBreakdown;
+
+  /// No description provided for @exportReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Export report'**
+  String get exportReport;
+
+  /// No description provided for @chooseAllowanceType.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose an allowance type'**
+  String get chooseAllowanceType;
+
+  /// No description provided for @sharedDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Travel share based on the number of colleagues'**
+  String get sharedDescription;
+
+  /// No description provided for @travelDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Meals and accommodation during an assignment'**
+  String get travelDescription;
+
+  /// No description provided for @rideDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Ride services and other local transport costs'**
+  String get rideDescription;
+
+  /// No description provided for @seeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'See all'**
+  String get seeAll;
+
+  /// No description provided for @seeAllowanceTypes.
+  ///
+  /// In en, this message translates to:
+  /// **'See types'**
+  String get seeAllowanceTypes;
 }
 
 class _AppLocalizationsDelegate

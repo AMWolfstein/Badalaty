@@ -140,5 +140,19 @@
   "dataSettingsSection": "Data and app",
   "directoryTitle": "Clients, colleagues and teams",
   "tripDetailsTitle": "Assignment details",
-  "newAssignmentTitle": "Add assignment"
+  "newAssignmentTitle": "Add assignment",
+  "fromDate": "From",
+  "toDate": "To",
+  "allClients": "All clients",
+  "allAssignments": "All assignments",
+  "allCategories": "All types",
+  "periodAllowance": "Total allowance for the period",
+  "allowanceBreakdown": "Breakdown by allowance type",
+  "exportReport": "Export report",
+  "chooseAllowanceType": "Choose an allowance type",
+  "sharedDescription": "Travel share based on the number of colleagues",
+  "travelDescription": "Meals and accommodation during an assignment",
+  "rideDescription": "Ride services and other local transport costs",
+  "seeAll": "See all",
+  "seeAllowanceTypes": "See types"
 }

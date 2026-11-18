@@ -398,4 +398,48 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get newAssignmentTitle => 'Add assignment';
+
+  @override
+  String get fromDate => 'From';
+
+  @override
+  String get toDate => 'To';
+
+  @override
+  String get allClients => 'All clients';
+
+  @override
+  String get allAssignments => 'All assignments';
+
+  @override
+  String get allCategories => 'All types';
+
+  @override
+  String get periodAllowance => 'Total allowance for the period';
+
+  @override
+  String get allowanceBreakdown => 'Breakdown by allowance type';
+
+  @override
+  String get exportReport => 'Export report';
+
+  @override
+  String get chooseAllowanceType => 'Choose an allowance type';
+
+  @override
+  String get sharedDescription =>
+      'Travel share based on the number of colleagues';
+
+  @override
+  String get travelDescription =>
+      'Meals and accommodation during an assignment';
+
+  @override
+  String get rideDescription => 'Ride services and other local transport costs';
+
+  @override
+  String get seeAll => 'See all';
+
+  @override
+  String get seeAllowanceTypes => 'See types';
 }

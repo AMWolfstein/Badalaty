@@ -36,10 +36,21 @@ class HomePage extends StatelessWidget {
       children: [
         GlassHighlight(
           label: '${l.owner} · ${l.today}',
-          value: context.money(ownerTotal(today)),
-          detail: Text('${l.month}  ·  ${context.money(ownerTotal(month))}'),
+          value: context.formattedNumber(ownerTotal(today)),
+          unit: l.egp,
+          detail: Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            spacing: 8,
+            children: [Text(l.month), Text(context.money(ownerTotal(month)))],
+          ),
         ),
-        GlassHeading(l.addEntry),
+        GlassHeading(
+          l.addEntry,
+          action: TextButton(
+            onPressed: () => context.push('/add'),
+            child: Text(l.seeAllowanceTypes),
+          ),
+        ),
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -91,7 +102,7 @@ class HomePage extends StatelessWidget {
                 records.byId(trip['client'])?['name'] as String? ??
                     l.activeTrip,
               ),
-              trailing: const Icon(Icons.keyboard_arrow_right),
+              trailing: Chip(label: Text(l.statusName('active'))),
               onTap: () => context.push('/assignment/${trip['id']}'),
             ),
           ),
@@ -100,7 +111,7 @@ class HomePage extends StatelessWidget {
           l.recent,
           action: TextButton(
             onPressed: () => context.go('/history'),
-            child: Text(l.history),
+            child: Text(l.seeAll),
           ),
         ),
         if (records.entries.isEmpty) Text(l.empty),
@@ -151,6 +162,7 @@ class AddEntryPage extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          GlassHeading(l.chooseAllowanceType),
           for (final category in Category.values)
             Card(
               child: ListTile(
@@ -159,7 +171,16 @@ class AddEntryPage extends StatelessWidget {
                   tone: categoryTones[category.name]!,
                 ),
                 title: Text(l.categoryName(category.name)),
-                trailing: const Icon(Icons.keyboard_arrow_right),
+                subtitle: Text(switch (category) {
+                  Category.shared => l.sharedDescription,
+                  Category.travel => l.travelDescription,
+                  Category.ride => l.rideDescription,
+                }),
+                trailing: Icon(
+                  Directionality.of(context) == TextDirection.rtl
+                      ? Icons.chevron_left
+                      : Icons.chevron_right,
+                ),
                 onTap: () => context.pushReplacement('/entry/${category.name}'),
               ),
             ),

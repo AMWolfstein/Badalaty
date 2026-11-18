@@ -13,6 +13,7 @@ import 'allowances/calculation.dart';
 import 'allowances/entry.dart';
 import 'assignments/assignments.dart';
 import 'data/state.dart';
+import 'forms.dart';
 import 'history/history.dart';
 import 'home/home.dart';
 import 'l10n/app_localizations.dart';
@@ -157,7 +158,13 @@ class _AppState extends ConsumerState<BadalatyApp> with WidgetsBindingObserver {
     final records = ref.watch(recordsProvider).value;
     final settings = records?.settings ?? {};
     final language = settings['language'];
+    final arabic =
+        language == 'ar' ||
+        ((language == null || language == 'system') &&
+            WidgetsBinding.instance.platformDispatcher.locale.languageCode ==
+                'ar');
     return MaterialApp.router(
+      debugShowCheckedModeBanner: false,
       routerConfig: router,
       onGenerateTitle: (context) => context.l.title,
       supportedLocales: AppLocalizations.supportedLocales,
@@ -170,8 +177,8 @@ class _AppState extends ConsumerState<BadalatyApp> with WidgetsBindingObserver {
       locale: language == 'ar' || language == 'en'
           ? Locale(language as String)
           : null,
-      theme: badalatyTheme(Brightness.light),
-      darkTheme: badalatyTheme(Brightness.dark),
+      theme: badalatyTheme(Brightness.light, arabic: arabic),
+      darkTheme: badalatyTheme(Brightness.dark, arabic: arabic),
       themeMode: switch (settings['theme']) {
         'light' => ThemeMode.light,
         'dark' => ThemeMode.dark,
@@ -199,7 +206,18 @@ class _Frame extends StatelessWidget {
     final current = _sections.indexOf(path);
     return GlassScaffold(
       appBar: AppBar(
-        title: Text(current == 0 ? l.title : labels[current]),
+        title: current == 0
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    dateLabel(context, dayKey(DateTime.now())),
+                    style: Theme.of(context).textTheme.labelSmall,
+                  ),
+                  Text(l.title),
+                ],
+              )
+            : Text(labels[current]),
         actions: [
           if (current == 0)
             Padding(

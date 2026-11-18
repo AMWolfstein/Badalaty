@@ -126,5 +126,19 @@
   "dataSettingsSection": "البيانات والتطبيق",
   "directoryTitle": "العملاء والزملاء والفرق",
   "tripDetailsTitle": "تفاصيل المأمورية",
-  "newAssignmentTitle": "إضافة مأمورية"
+  "newAssignmentTitle": "إضافة مأمورية",
+  "fromDate": "من",
+  "toDate": "إلى",
+  "allClients": "كل العملاء",
+  "allAssignments": "كل المأموريات",
+  "allCategories": "كل الأنواع",
+  "periodAllowance": "إجمالي مستحقات الفترة",
+  "allowanceBreakdown": "التوزيع حسب نوع البدل",
+  "exportReport": "تصدير التقرير",
+  "chooseAllowanceType": "اختار نوع البدل",
+  "sharedDescription": "حساب حصة التنقل حسب عدد الزملاء",
+  "travelDescription": "الوجبات والإقامة أثناء المأمورية",
+  "rideDescription": "أوبر أو مصاريف انتقال محلية",
+  "seeAll": "عرض الكل",
+  "seeAllowanceTypes": "عرض الأنواع"
 }

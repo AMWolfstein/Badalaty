@@ -5,8 +5,9 @@ import 'app_localizations.dart';
 
 extension Labels on BuildContext {
   AppLocalizations get l => AppLocalizations.of(this)!;
-  String money(int number) =>
-      '${NumberFormat.decimalPattern(l.localeName).format(number)} ${l.egp}';
+  String formattedNumber(int number) =>
+      NumberFormat.decimalPattern(l.localeName).format(number);
+  String money(int number) => '${formattedNumber(number)} ${l.egp}';
 }
 
 extension RecordLabels on AppLocalizations {

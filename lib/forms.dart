@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 import 'allowances/calculation.dart';
 import 'data/store.dart';
 import 'l10n/labels.dart';
-import 'widgets/glass_design.dart';
 
 Future<bool> confirm(BuildContext context, String message) async =>
     await showDialog<bool>(
@@ -33,17 +32,21 @@ String dateLabel(BuildContext context, String day) =>
     DateFormat.yMMMd(context.l.localeName).format(DateTime.parse(day));
 
 class DayField extends StatelessWidget {
-  const DayField(this.label, this.day, this.onChange, {super.key});
+  const DayField(
+    this.label,
+    this.day,
+    this.onChange, {
+    this.shortDate = false,
+    super.key,
+  });
   final String label;
   final String day;
+  final bool shortDate;
   final ValueChanged<String> onChange;
 
   @override
   Widget build(BuildContext context) => Card(
-    child: ListTile(
-      leading: const GlassIcon(Icons.calendar_today_outlined),
-      title: Text(label),
-      subtitle: Text(dateLabel(context, day)),
+    child: InkWell(
       onTap: () async {
         final result = await showDatePicker(
           context: context,
@@ -53,42 +56,129 @@ class DayField extends StatelessWidget {
         );
         if (result != null) onChange(dayKey(result));
       },
+      child: _FieldContent(
+        label: label,
+        value: shortDate
+            ? DateFormat.MMMd(context.l.localeName).format(DateTime.parse(day))
+            : dateLabel(context, day),
+        icon: Icons.calendar_today_outlined,
+      ),
     ),
   );
 }
 
 class Choice<T> extends StatelessWidget {
-  const Choice(this.label, this.value, this.items, this.onChange, {super.key});
+  const Choice(
+    this.label,
+    this.value,
+    this.items,
+    this.onChange, {
+    this.compact = false,
+    super.key,
+  });
   final String label;
   final T value;
   final Map<T, String> items;
   final ValueChanged<T> onChange;
+  final bool compact;
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: 11),
-    child: InputDecorator(
-      decoration: InputDecoration(
-        labelText: label,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<T>(
-          isExpanded: true,
-          value: items.containsKey(value) ? value : items.keys.firstOrNull,
-          items: items.entries
-              .map(
-                (e) => DropdownMenuItem<T>(
-                  value: e.key,
-                  child: Text(e.value, overflow: TextOverflow.ellipsis),
+  Widget build(BuildContext context) {
+    final selected = items.containsKey(value) ? value : items.keys.firstOrNull;
+    final text = items[selected] ?? label;
+    final scheme = Theme.of(context).colorScheme;
+    return Card(
+      color: compact ? scheme.primaryContainer : null,
+      elevation: compact ? 0 : null,
+      shape: compact
+          ? StadiumBorder(side: BorderSide(color: scheme.outlineVariant))
+          : null,
+      child: PopupMenuButton<T>(
+        tooltip: label,
+        enabled: items.isNotEmpty,
+        initialValue: selected,
+        itemBuilder: (_) => [
+          for (final item in items.entries)
+            PopupMenuItem<T>(value: item.key, child: Text(item.value)),
+        ],
+        onSelected: onChange,
+        child: compact
+            ? Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 7,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  spacing: 4,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        text,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.labelSmall,
+                      ),
+                    ),
+                    const Icon(Icons.keyboard_arrow_down, size: 14),
+                  ],
                 ),
               )
-              .toList(),
-          onChanged: (next) => onChange(next as T),
-        ),
+            : _FieldContent(
+                label: label,
+                value: text,
+                icon: Icons.keyboard_arrow_down,
+              ),
       ),
-    ),
-  );
+    );
+  }
+}
+
+class _FieldContent extends StatelessWidget {
+  const _FieldContent({
+    required this.label,
+    required this.value,
+    required this.icon,
+  });
+  final String label;
+  final String value;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: Row(
+        spacing: 8,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  label,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                    height: 1.4,
+                  ),
+                ),
+                Text(
+                  value,
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    height: 1.45,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(icon, color: theme.colorScheme.primary, size: 16),
+        ],
+      ),
+    );
+  }
 }
 
 class SearchRecords extends StatelessWidget {
@@ -108,15 +198,15 @@ class SearchRecords extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Card(
-    child: ListTile(
-      title: Text(label),
-      subtitle: Text(
-        items
-            .where((r) => selected.contains(r['id']))
-            .map((r) => r['name'])
+    child: InkWell(
+      child: _FieldContent(
+        label: label,
+        value: items
+            .where((record) => selected.contains(record['id']))
+            .map((record) => record['name'])
             .join(' · '),
+        icon: Icons.search,
       ),
-      trailing: const Icon(Icons.search),
       onTap: () async {
         final selection = {...selected};
         var search = '';
@@ -193,15 +283,26 @@ Widget field(
   String label, {
   bool number = false,
   ValueChanged<String>? onChanged,
-}) => Padding(
-  padding: const EdgeInsets.only(bottom: 12),
-  child: TextField(
-    controller: controller,
-    decoration: InputDecoration(labelText: label),
-    keyboardType: number
-        ? const TextInputType.numberWithOptions(decimal: true)
-        : TextInputType.text,
-    onChanged: onChanged,
+}) => Card(
+  child: Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+    child: TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        floatingLabelBehavior: FloatingLabelBehavior.always,
+        border: InputBorder.none,
+        enabledBorder: InputBorder.none,
+        focusedBorder: InputBorder.none,
+        contentPadding: EdgeInsets.zero,
+        filled: false,
+        isDense: true,
+      ),
+      keyboardType: number
+          ? const TextInputType.numberWithOptions(decimal: true)
+          : TextInputType.text,
+      onChanged: onChanged,
+    ),
   ),
 );
 
