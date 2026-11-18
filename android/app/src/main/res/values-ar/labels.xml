@@ -1,0 +1,14 @@
+<resources>
+  <string name="app_name">بدلاتي</string>
+  <string name="widget_compact">بدل اليوم</string>
+  <string name="widget_expanded">ملخص البدلات</string>
+  <string name="widget_add">إضافة سجل</string>
+  <string name="widget_travel">سجّل بدل السفر</string>
+  <string name="widget_history">السجلات</string>
+  <string name="widget_egp">جنيه</string>
+  <string name="widget_none">لا توجد سجلات اليوم</string>
+  <string name="reminder_channel">تذكيرات البدلات</string>
+  <string name="widget_count">السجلات · %1$s</string>
+  <string name="reminder_general">راجع سجلات بدلات اليوم.</string>
+  <string name="reminder_travel">بدل سفر اليوم لسه مش متسجل.</string>
+</resources>

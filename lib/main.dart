@@ -1,0 +1,227 @@
+import 'dart:async';
+import 'dart:io';
+
+import 'package:material_ui/material_ui.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_localizations/flutter_localizations.dart'
+    show GlobalWidgetsLocalizations;
+import 'package:cupertino_ui/cupertino_ui.dart'
+    show GlobalCupertinoLocalizations;
+import 'package:go_router/go_router.dart';
+
+import 'allowances/calculation.dart';
+import 'allowances/entry.dart';
+import 'assignments/assignments.dart';
+import 'data/state.dart';
+import 'history/history.dart';
+import 'home/home.dart';
+import 'l10n/app_localizations.dart';
+import 'l10n/labels.dart';
+import 'reports/reports.dart';
+import 'settings/settings.dart';
+import 'widgets/platform.dart';
+
+void main() => runApp(const ProviderScope(child: BadalatyApp()));
+
+class BadalatyApp extends ConsumerStatefulWidget {
+  const BadalatyApp({super.key});
+  @override
+  ConsumerState<BadalatyApp> createState() => _AppState();
+}
+
+const _sections = ['/', '/history', '/assignments', '/reports', '/settings'];
+
+class _AppState extends ConsumerState<BadalatyApp> with WidgetsBindingObserver {
+  late final router = GoRouter(
+    routes: [
+      ShellRoute(
+        builder: (context, state, child) => _Frame(state.uri.path, child),
+        routes: [
+          for (var i = 0; i < _sections.length; i++)
+            GoRoute(path: _sections[i], builder: (_, _) => _Section(i)),
+        ],
+      ),
+      GoRoute(path: '/add', builder: (_, _) => const AddEntryPage()),
+      GoRoute(
+        path: '/entry/:category',
+        builder: (_, state) {
+          final category =
+              Category.values
+                  .where((c) => c.name == state.pathParameters['category'])
+                  .firstOrNull ??
+              Category.shared;
+          final query = state.uri.queryParameters;
+          return EntryPage(
+            category,
+            key: ValueKey(state.pageKey),
+            id: int.tryParse(query['id'] ?? ''),
+            copy: int.tryParse(query['copy'] ?? ''),
+            trip: int.tryParse(query['trip'] ?? ''),
+            initialDay: query['day'],
+          );
+        },
+      ),
+      GoRoute(
+        path: '/assignment/:id',
+        builder: (_, state) =>
+            AssignmentEditor(int.tryParse(state.pathParameters['id']!)),
+      ),
+    ],
+  );
+  Timer? timer;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _scheduleMidnight();
+    if (Platform.isAndroid) {
+      platformChannel.setMethodCallHandler((call) async {
+        if (call.method == 'route' && mounted) {
+          _route(call.arguments as String?);
+        }
+      });
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        final path = await platformChannel.invokeMethod<String>('initialRoute');
+        if (mounted) _route(path);
+      });
+    }
+  }
+
+  void _route(String? path) {
+    if (path == '/history' || path == '/') {
+      router.go(path!);
+    } else if (path == '/entry/travel' || path == '/add') {
+      router.go('/');
+      router.push(path!);
+    }
+  }
+
+  void _scheduleMidnight() {
+    timer?.cancel();
+    final now = DateTime.now();
+    timer = Timer(
+      DateTime(now.year, now.month, now.day + 1).difference(now),
+      () {
+        if (mounted) setState(() {});
+        _scheduleMidnight();
+      },
+    );
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _scheduleMidnight();
+      setState(() {});
+    }
+  }
+
+  @override
+  void dispose() {
+    timer?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
+    if (Platform.isAndroid) platformChannel.setMethodCallHandler(null);
+    router.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final records = ref.watch(recordsProvider).value;
+    final settings = records?.settings ?? {};
+    final language = settings['language'];
+    ThemeData theme(Brightness brightness) => ThemeData(
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: const Color(0xFF0967C6),
+        brightness: brightness,
+      ),
+    );
+    return MaterialApp.router(
+      routerConfig: router,
+      onGenerateTitle: (context) => context.l.title,
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ],
+      locale: language == 'ar' || language == 'en'
+          ? Locale(language as String)
+          : null,
+      theme: theme(Brightness.light),
+      darkTheme: theme(Brightness.dark),
+      themeMode: switch (settings['theme']) {
+        'light' => ThemeMode.light,
+        'dark' => ThemeMode.dark,
+        _ => ThemeMode.system,
+      },
+      builder: (context, child) {
+        if (records != null) {
+          unawaited(
+            publishPlatformData(records)
+                .catchError((Object _, StackTrace _) {}),
+          );
+        }
+        return child!;
+      },
+    );
+  }
+}
+
+class _Frame extends StatelessWidget {
+  const _Frame(this.path, this.child);
+  final String path;
+  final Widget child;
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l;
+    final labels = [l.home, l.history, l.assignments, l.reports, l.settings];
+    const icons = [
+      Icons.home_outlined,
+      Icons.calendar_month_outlined,
+      Icons.route_outlined,
+      Icons.bar_chart_outlined,
+      Icons.settings_outlined,
+    ];
+    final current = _sections.indexOf(path);
+    return Scaffold(
+      appBar: AppBar(title: Text(current == 0 ? l.title : labels[current])),
+      body: SafeArea(bottom: false, child: child),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: current,
+        labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
+        onDestinationSelected: (index) => context.go(_sections[index]),
+        destinations: [
+          for (var i = 0; i < labels.length; i++)
+            NavigationDestination(icon: Icon(icons[i]), label: labels[i]),
+        ],
+      ),
+    );
+  }
+}
+
+class _Section extends ConsumerWidget {
+  const _Section(this.index);
+  final int index;
+  @override
+  Widget build(BuildContext context, WidgetRef ref) => ref
+      .watch(recordsProvider)
+      .when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (_, _) => Center(
+          child: TextButton(
+            onPressed: () => ref.invalidate(recordsProvider),
+            child: Text(context.l.error),
+          ),
+        ),
+        data: (records) => switch (index) {
+          0 => HomePage(records),
+          1 => HistoryPage(records),
+          2 => AssignmentsPage(records),
+          3 => ReportsPage(records),
+          _ => SettingsPage(records),
+        },
+      );
+}
