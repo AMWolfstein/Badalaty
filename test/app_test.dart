@@ -1,6 +1,7 @@
 import 'package:badalaty/data/state.dart';
 import 'package:badalaty/data/store.dart';
 import 'package:badalaty/main.dart';
+import 'package:badalaty/history/history.dart';
 import 'package:badalaty/widgets/glass_navigation_bar.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -103,6 +104,11 @@ void main() {
         lessThan(tester.getCenter(tab('Settings')).dx),
       );
       expect(tester.widget<GlassNavigationBar>(bar).selectedIndex, 0);
+      Rect target(String label) => tester.getRect(
+        find.descendant(of: bar, matching: find.widgetWithText(InkWell, label)),
+      );
+      expect(target('Home').width, greaterThanOrEqualTo(48));
+      expect(target('History').left - target('Home').right, closeTo(4, 0.01));
 
       await tester.runAsync(
         () => db.save('settings', {'language': 'ar', 'theme': 'dark'}, id: id),
@@ -121,6 +127,14 @@ void main() {
         (3, 'التقارير'),
       ]) {
         await tester.tap(tab(label));
+        await tester.pump();
+        if (index == 1) {
+          final route = ModalRoute.of(
+            tester.element(find.byType(HistoryPage)),
+          )!;
+          expect(route.transitionDuration, Duration.zero);
+          expect(route.reverseTransitionDuration, Duration.zero);
+        }
         await tester.pumpAndSettle();
         expect(tester.widget<GlassNavigationBar>(bar).selectedIndex, index);
         expect(find.widgetWithText(AppBar, label), findsOneWidget);
@@ -134,10 +148,7 @@ void main() {
       await tester.scrollUntilVisible(backups, 180);
       await tester.drag(find.byType(ListView), const Offset(0, -180));
       await tester.pumpAndSettle();
-      final glass = find.descendant(
-        of: bar,
-        matching: find.byType(BackdropFilter),
-      );
+      final glass = find.descendant(of: bar, matching: find.byType(ClipRRect));
       expect(
         tester.getBottomLeft(backups).dy,
         lessThan(tester.getTopLeft(glass).dy),

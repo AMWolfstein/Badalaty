@@ -1,5 +1,3 @@
-import 'dart:ui' as ui;
-
 import 'package:material_ui/material_ui.dart';
 
 EdgeInsets sectionListPadding(BuildContext context) =>
@@ -51,43 +49,40 @@ class GlassNavigationBar extends StatelessWidget {
           ),
           child: ClipRRect(
             borderRadius: radius,
-            child: BackdropFilter(
-              filter: ui.ImageFilter.blur(sigmaX: 9, sigmaY: 9),
-              enabled: !highContrast,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      surface.withValues(alpha: highContrast ? 1 : .88),
-                      surface.withValues(alpha: highContrast ? 1 : .76),
-                    ],
-                  ),
-                  borderRadius: radius,
-                  border: Border.all(
-                    color: dark ? const Color(0xFF476987) : Colors.white,
-                  ),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    surface.withValues(alpha: highContrast ? 1 : .96),
+                    surface.withValues(alpha: highContrast ? 1 : .9),
+                  ],
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(5),
-                  child: Row(
-                    children: [
-                      for (final (index, destination) in destinations.indexed)
-                        Expanded(
-                          child: _GlassTab(
-                            label: destination.label,
-                            icon: destination.icon,
-                            selected: index == selectedIndex,
-                            foreground: index == selectedIndex
-                                ? selectedInk
-                                : foreground,
-                            fill: selectedFill,
-                            onTap: () => onSelected(index),
-                          ),
+                borderRadius: radius,
+                border: Border.all(
+                  color: dark ? const Color(0xFF476987) : Colors.white,
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(5),
+                child: Row(
+                  spacing: 4,
+                  children: [
+                    for (final (index, destination) in destinations.indexed)
+                      Expanded(
+                        child: _GlassTab(
+                          label: destination.label,
+                          icon: destination.icon,
+                          selected: index == selectedIndex,
+                          foreground: index == selectedIndex
+                              ? selectedInk
+                              : foreground,
+                          fill: selectedFill,
+                          onTap: () => onSelected(index),
                         ),
-                    ],
-                  ),
+                      ),
+                  ],
                 ),
               ),
             ),

@@ -54,7 +54,7 @@ ThemeData badalatyTheme(Brightness brightness) {
       surfaceTintColor: Colors.transparent,
       elevation: 1.5,
       shadowColor: const Color(0x22264D77),
-      margin: const EdgeInsets.only(bottom: 8),
+      margin: const EdgeInsets.only(bottom: 10),
       shape: shape,
       clipBehavior: Clip.antiAlias,
     ),
@@ -121,6 +121,25 @@ class GlassScaffold extends StatelessWidget {
   final Widget? bottomNavigationBar;
 
   @override
+  Widget build(BuildContext context) => Stack(
+    fit: StackFit.expand,
+    children: [
+      const RepaintBoundary(child: _GlassBackground()),
+      Scaffold(
+        backgroundColor: Colors.transparent,
+        extendBody: bottomNavigationBar != null,
+        appBar: appBar,
+        body: body,
+        bottomNavigationBar: bottomNavigationBar,
+      ),
+    ],
+  );
+}
+
+class _GlassBackground extends StatelessWidget {
+  const _GlassBackground();
+
+  @override
   Widget build(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
     return DecoratedBox(
@@ -142,13 +161,6 @@ class GlassScaffold extends StatelessWidget {
                 ? const [Color(0x80352E5B), Color(0x00352E5B)]
                 : const [Color(0xA4DFD9F8), Color(0x00DFD9F8)],
           ),
-        ),
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
-          extendBody: bottomNavigationBar != null,
-          appBar: appBar,
-          body: body,
-          bottomNavigationBar: bottomNavigationBar,
         ),
       ),
     );

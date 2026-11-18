@@ -39,7 +39,7 @@ class _AssignmentsPageState extends State<AssignmentsPage> {
             children: [
               for (final status in [null, ...tripStatuses])
                 Padding(
-                  padding: const EdgeInsetsDirectional.only(end: 7),
+                  padding: const EdgeInsetsDirectional.only(end: 10),
                   child: ChoiceChip(
                     label: Text(status == null ? l.all : l.statusName(status)),
                     selected: status == filter,
