@@ -1,10 +1,10 @@
 {
   "package": "com.amwolfstein.badalaty",
-  "version": "1.0.5",
-  "build": 6,
-  "sha256": "085a822c3e33492587650a0cf8e93c1402fc2526763ebbe52c101569eada5218",
+  "version": "1.0.6",
+  "build": 7,
+  "sha256": "527c97cf214ebcbcb6fd811385285e2157c87322ab657f3c19c34effb34c1495",
   "notes": {
-    "ar": "تصميم زجاجي جديد للشاشات بالوضعين الفاتح والداكن.",
-    "en": "Refreshed glass design for the app screens in light and dark mode."
+    "ar": "تنقّل مباشر بين التبويبات وخلفية ثابتة، مع مسافات أوسع بين الاختيارات.",
+    "en": "Instant tab switches, a stable background, and more space between controls."
   }
 }
