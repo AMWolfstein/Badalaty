@@ -15,9 +15,9 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.os.Build
+import android.text.format.DateFormat
 import android.view.View
 import android.widget.RemoteViews
-import java.text.DateFormat
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -90,32 +90,62 @@ object WidgetData {
             "dark" -> true
             else -> context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
         }
-        val view = RemoteViews(context.packageName, R.layout.badalaty_widget)
+        val layout = if (expanded) R.layout.badalaty_widget_expanded else R.layout.badalaty_widget_compact
+        val view = RemoteViews(context.packageName, layout)
+        val ink = if (dark) 0xFFF0F6FD.toInt() else 0xFF142A45.toInt()
+        val muted = if (dark) 0xFFAEC2DA.toInt() else 0xFF435E76.toInt()
+        val mark = if (dark) 0xFF9AE5FF.toInt() else 0xFF075A87.toInt()
+        val actionInk = if (dark) 0xFF102B40.toInt() else 0xFFFFFFFF.toInt()
         view.setInt(R.id.widget_root, "setBackgroundResource", if (dark) R.drawable.widget_dark else R.drawable.widget_light)
         view.setInt(R.id.widget_root, "setLayoutDirection", if (locale.language == "ar") View.LAYOUT_DIRECTION_RTL else View.LAYOUT_DIRECTION_LTR)
-        for (id in listOf(R.id.widget_date, R.id.widget_amount, R.id.widget_details, R.id.widget_add, R.id.widget_travel, R.id.widget_history)) {
-            view.setTextColor(id, if (dark) 0xFFE6F4FF.toInt() else 0xFF10294E.toInt())
-        }
-        view.setTextViewText(R.id.widget_date, DateFormat.getDateInstance(DateFormat.MEDIUM, locale).format(Calendar.getInstance().time))
+        view.setInt(R.id.widget_mark, "setBackgroundResource", if (dark) R.drawable.widget_mark_dark else R.drawable.widget_mark_light)
+        view.setInt(R.id.widget_mark_icon, "setColorFilter", mark)
+
+        val pattern = DateFormat.getBestDateTimePattern(locale, if (expanded) "EEE d MMM" else "d MMM")
+        val date = SimpleDateFormat(pattern, locale).format(Calendar.getInstance().time)
         val numbers = NumberFormat.getIntegerInstance(locale)
         val amount = numbers.format(today?.optLong("amount") ?: 0)
-        view.setTextViewText(R.id.widget_amount, "$amount ${labels.getString(R.string.widget_egp)}")
-        val count = today?.optInt("count") ?: 0
-        val assignment = today?.optString("assignment").orEmpty()
-        val countText = labels.getString(R.string.widget_count, numbers.format(count))
-        val details = if (assignment.isNotEmpty()) "$assignment · $countText"
-            else if (count > 0) countText else labels.getString(R.string.widget_none)
-        view.setTextViewText(R.id.widget_details, details)
-        view.setTextViewText(R.id.widget_add, labels.getString(R.string.widget_add))
-        view.setTextViewText(R.id.widget_travel, labels.getString(R.string.widget_travel))
-        view.setTextViewText(R.id.widget_history, labels.getString(R.string.widget_history))
-        for (id in listOf(R.id.widget_details, R.id.widget_travel, R.id.widget_history)) {
-            view.setViewVisibility(id, if (expanded) View.VISIBLE else View.GONE)
+        view.setTextViewText(R.id.widget_date, date)
+        view.setTextViewText(R.id.widget_metric, labels.getString(R.string.widget_today_amount))
+        view.setTextViewText(R.id.widget_amount, amount)
+        view.setTextViewText(R.id.widget_currency, labels.getString(R.string.widget_egp))
+        view.setTextColor(R.id.widget_amount, ink)
+        for (id in listOf(R.id.widget_date, R.id.widget_metric, R.id.widget_currency)) {
+            view.setTextColor(id, muted)
         }
-        view.setOnClickPendingIntent(R.id.widget_add, open(context, "/add", 1))
-        view.setOnClickPendingIntent(R.id.widget_travel, open(context, "/entry/travel", 2))
-        view.setOnClickPendingIntent(R.id.widget_history, open(context, "/history", 3))
+
+        view.bindAction(R.id.widget_add, R.id.widget_add_label, R.id.widget_add_icon,
+            labels.getString(R.string.widget_add),
+            if (dark) R.drawable.widget_primary_dark else R.drawable.widget_primary_light,
+            actionInk, open(context, "/add", 1))
+        if (expanded) {
+            val count = today?.optInt("count") ?: 0
+            val assignment = today?.optString("assignment").orEmpty()
+            val countText = if (count > 0) labels.getString(R.string.widget_count, numbers.format(count))
+                else labels.getString(R.string.widget_none)
+            view.setTextViewText(R.id.widget_brand, labels.getString(R.string.app_name))
+            view.setTextViewText(R.id.widget_details, if (assignment.isEmpty()) countText else "$assignment\n$countText")
+            view.setTextColor(R.id.widget_brand, ink)
+            view.setTextColor(R.id.widget_details, muted)
+            view.setInt(R.id.widget_divider, "setBackgroundColor", if (dark) 0xFF304560.toInt() else 0xFFD4E1EE.toInt())
+
+            val secondary = if (dark) R.drawable.widget_secondary_dark else R.drawable.widget_secondary_light
+            view.bindAction(R.id.widget_travel, R.id.widget_travel_label, R.id.widget_travel_icon,
+                labels.getString(R.string.widget_travel), secondary, ink, open(context, "/entry/travel", 2))
+            view.bindAction(R.id.widget_history, R.id.widget_history_label, R.id.widget_history_icon,
+                labels.getString(R.string.widget_history), secondary, ink, open(context, "/history", 3))
+        }
         manager.updateAppWidget(ids, view)
+    }
+
+    private fun RemoteViews.bindAction(id: Int, labelId: Int, iconId: Int, text: String,
+                                       background: Int, ink: Int, intent: PendingIntent) {
+        setInt(id, "setBackgroundResource", background)
+        setTextViewText(labelId, text)
+        setTextColor(labelId, ink)
+        setInt(iconId, "setColorFilter", ink)
+        setContentDescription(id, text)
+        setOnClickPendingIntent(id, intent)
     }
 
     fun schedule(context: Context) {
