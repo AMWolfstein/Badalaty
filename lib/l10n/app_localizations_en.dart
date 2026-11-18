@@ -337,4 +337,47 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get share => 'Share';
+
+  @override
+  String get appUpdates => 'App updates';
+
+  @override
+  String get checkingForUpdates => 'Checking GitHub for updates…';
+
+  @override
+  String installedVersion(String version) {
+    return 'Installed version $version';
+  }
+
+  @override
+  String updateAvailable(String version) {
+    return 'Version $version is available';
+  }
+
+  @override
+  String get noUpdateAvailable => 'You have the latest version.';
+
+  @override
+  String get updateUnsupported => 'This update channel provides ARM64 builds.';
+
+  @override
+  String get updateCheckFailed =>
+      'Could not check for updates. Check your internet connection and try again.';
+
+  @override
+  String get updateInstallFailed =>
+      'The update could not be verified or opened. Try downloading it again.';
+
+  @override
+  String get updateInstallPermission =>
+      'Allow installation from Badalaty in Android settings, then return and tap Install update.';
+
+  @override
+  String get downloadUpdate => 'Download & install';
+
+  @override
+  String get installUpdate => 'Install update';
+
+  @override
+  String get retryUpdate => 'Try again';
 }

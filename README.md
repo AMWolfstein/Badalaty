@@ -13,10 +13,21 @@ flutter run
 dart format --output=none --set-exit-if-changed lib test
 flutter analyze
 flutter test
-flutter build apk --release
 ```
 
-The default release build uses debug signing for local installation. The output is `build/app/outputs/flutter-apk/app-release.apk`. Configure your release keystore before distributing a production build. For the ARM64 test build, use `flutter build apk --release --target-platform android-arm64`.
+## Android releases and updates
+
+The application ID is `com.amwolfstein.badalaty`. Android treats versions with the previous ID as a separate app. Export a backup from the previous app and restore it in the new app to transfer records.
+
+Use the Badalaty release PKCS#12 keystore for every published build. Keep the keystore and password file outside Git. The key alias is `badalaty` and the password applies to both the store and the key.
+
+```sh
+export BADALATY_KEYSTORE_PATH=/absolute/path/to/badalaty-release.p12
+export BADALATY_KEYSTORE_PASSWORD_FILE=/absolute/path/to/store-password
+flutter build apk --release --target-platform android-arm64
+```
+
+Use `apksigner verify --print-certs` to verify the build at `build/app/outputs/flutter-apk/app-release.apk`. Publish `Badalaty-<version>-arm64.apk` to GitHub Releases and to `android-preview/artifacts`. Update `artifacts/latest.json` in the same Git commit as the new APK. Set the package, version, incremented Android build number, and APK SHA-256. The settings screen checks this feed on request, downloads the verified APK, and hands it to the Android package installer. Allow installation from Badalaty if Android prompts.
 
 ## Allowances and data
 
@@ -26,7 +37,7 @@ Reports export six sheets, including an owner-only summary. Choose the workbook 
 
 ## Android widgets and reminders
 
-Add either Badalaty widget from the launcher’s widget picker. Add Entry opens a category chooser and Record Travel opens a prefilled form. Widgets display committed totals. Settings includes Android notification permission and a configurable reminder time. Android can defer notification delivery during idle modes. Native reminders use a 90-day snapshot refreshed when the app is opened or records are changed.
+Add either Badalaty widget from the launcher’s widget picker. Add Allowance opens a category chooser. The expanded widget also opens History. Widgets display committed totals. Settings includes Android notification permission and a configurable reminder time. Android can defer notification delivery during idle modes. Native reminders use a 90-day snapshot refreshed when the app is opened or records are changed.
 
 ## iOS
 

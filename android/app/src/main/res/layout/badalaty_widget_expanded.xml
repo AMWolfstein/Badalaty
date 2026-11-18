@@ -61,7 +61,7 @@
         android:layout_width="match_parent" android:layout_height="wrap_content"
         android:orientation="horizontal">
         <LinearLayout
-            android:id="@+id/widget_add" android:layout_width="0dp" android:layout_weight="1.18"
+            android:id="@+id/widget_add" android:layout_width="0dp" android:layout_weight="1"
             android:layout_height="36dp" android:background="@drawable/widget_primary_light"
             android:gravity="center" android:orientation="horizontal" android:paddingHorizontal="3dp">
             <ImageView
@@ -75,21 +75,7 @@
         </LinearLayout>
         <FrameLayout android:layout_width="4dp" android:layout_height="1dp" />
         <LinearLayout
-            android:id="@+id/widget_travel" android:layout_width="0dp" android:layout_weight="1"
-            android:layout_height="36dp" android:background="@drawable/widget_secondary_light"
-            android:gravity="center" android:orientation="horizontal" android:paddingHorizontal="3dp">
-            <ImageView
-                android:id="@+id/widget_travel_icon" android:layout_width="13dp" android:layout_height="13dp"
-                android:importantForAccessibility="no" android:src="@drawable/widget_ic_travel" />
-            <TextView
-                android:id="@+id/widget_travel_label" android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:layout_marginStart="3dp" android:ellipsize="end" android:maxLines="1"
-                android:includeFontPadding="false" android:text="@string/widget_travel"
-                android:textSize="11sp" android:textStyle="bold" />
-        </LinearLayout>
-        <FrameLayout android:layout_width="4dp" android:layout_height="1dp" />
-        <LinearLayout
-            android:id="@+id/widget_history" android:layout_width="0dp" android:layout_weight="0.9"
+            android:id="@+id/widget_history" android:layout_width="0dp" android:layout_weight="1"
             android:layout_height="36dp" android:background="@drawable/widget_secondary_light"
             android:gravity="center" android:orientation="horizontal" android:paddingHorizontal="3dp">
             <ImageView

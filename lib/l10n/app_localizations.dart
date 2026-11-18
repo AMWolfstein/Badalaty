@@ -751,6 +751,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Share'**
   String get share;
+
+  /// No description provided for @appUpdates.
+  ///
+  /// In en, this message translates to:
+  /// **'App updates'**
+  String get appUpdates;
+
+  /// No description provided for @checkingForUpdates.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking GitHub for updates…'**
+  String get checkingForUpdates;
+
+  /// No description provided for @installedVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Installed version {version}'**
+  String installedVersion(String version);
+
+  /// No description provided for @updateAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version} is available'**
+  String updateAvailable(String version);
+
+  /// No description provided for @noUpdateAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'You have the latest version.'**
+  String get noUpdateAvailable;
+
+  /// No description provided for @updateUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'This update channel provides ARM64 builds.'**
+  String get updateUnsupported;
+
+  /// No description provided for @updateCheckFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not check for updates. Check your internet connection and try again.'**
+  String get updateCheckFailed;
+
+  /// No description provided for @updateInstallFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The update could not be verified or opened. Try downloading it again.'**
+  String get updateInstallFailed;
+
+  /// No description provided for @updateInstallPermission.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow installation from Badalaty in Android settings, then return and tap Install update.'**
+  String get updateInstallPermission;
+
+  /// No description provided for @downloadUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Download & install'**
+  String get downloadUpdate;
+
+  /// No description provided for @installUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Install update'**
+  String get installUpdate;
+
+  /// No description provided for @retryUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get retryUpdate;
 }
 
 class _AppLocalizationsDelegate

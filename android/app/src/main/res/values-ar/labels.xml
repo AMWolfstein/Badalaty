@@ -2,8 +2,7 @@
   <string name="app_name">بدلاتي</string>
   <string name="widget_compact">بدل اليوم</string>
   <string name="widget_expanded">ملخص البدلات</string>
-  <string name="widget_add">إضافة سجل</string>
-  <string name="widget_travel">بدل السفر</string>
+  <string name="widget_add">إضافة بدل</string>
   <string name="widget_history">السجلات</string>
   <string name="widget_egp">جنيه</string>
   <string name="widget_none">مفيش سجلات</string>

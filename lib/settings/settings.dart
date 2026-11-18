@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
@@ -11,6 +12,7 @@ import '../data/state.dart';
 import '../data/store.dart';
 import '../forms.dart';
 import '../l10n/labels.dart';
+import '../updates/update_dialog.dart';
 import '../widgets/platform.dart';
 import 'directory.dart';
 import '../widgets/glass_navigation_bar.dart';
@@ -44,6 +46,16 @@ class SettingsPage extends ConsumerWidget {
     return ListView(
       padding: sectionListPadding(context),
       children: [
+        if (Platform.isAndroid)
+          ListTile(
+            leading: const Icon(Icons.system_update_outlined),
+            title: Text(l.appUpdates),
+            onTap: () => showDialog<void>(
+              context: context,
+              barrierDismissible: false,
+              builder: (_) => const UpdateDialog(),
+            ),
+          ),
         Choice(l.language, settings['language'] as String? ?? 'system', {
           'system': l.system,
           'ar': l.arabic,
