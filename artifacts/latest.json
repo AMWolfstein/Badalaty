@@ -1,10 +1,10 @@
 {
   "package": "com.amwolfstein.badalaty",
-  "version": "1.0.6",
-  "build": 7,
-  "sha256": "527c97cf214ebcbcb6fd811385285e2157c87322ab657f3c19c34effb34c1495",
+  "version": "1.0.7",
+  "build": 8,
+  "sha256": "9e30c700750235056bd5a454b9fcee8e44ba42b7ec5bd2c9832afee393fc3f6a",
   "notes": {
-    "ar": "تنقّل مباشر بين التبويبات وخلفية ثابتة، مع مسافات أوسع بين الاختيارات.",
-    "en": "Instant tab switches, a stable background, and more space between controls."
+    "ar": "تقارير بفلاتر مدمجة وخط عربي موحّد، وتحديث بطاقات ومجموعات الإعدادات والنماذج.",
+    "en": "Compact report filters, matching typography, and updated cards, forms and settings."
   }
 }
