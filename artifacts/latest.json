@@ -1,10 +1,10 @@
 {
   "package": "com.amwolfstein.badalaty",
-  "version": "1.0.8",
-  "build": 9,
-  "sha256": "30aa9488617d0c9541b6bd18d2ed89cc3912507d14605f727c467f95f447af9b",
+  "version": "1.0.9",
+  "build": 10,
+  "sha256": "81c8594805ac0de8e377eead7b51b42bdd220f5336dc25a20a7431bf82c61f5b",
   "notes": {
-    "ar": "إضافة سجل من الرئيسية والويدجت باختيارات إجازة، مكتب، وبدل.",
-    "en": "Add records from Home and the widget: leave, office, or allowance."
+    "ar": "إصلاح اتجاه الأسهم بالعربية والإنجليزية، وإضافة العملاء والزملاء بالاسم، وإزالة الفرق المحفوظة.",
+    "en": "Correct navigation arrows in Arabic and English, add clients and colleagues by name, and remove saved teams."
   }
 }
