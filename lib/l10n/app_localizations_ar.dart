@@ -337,4 +337,47 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get share => 'مشاركة';
+
+  @override
+  String get appUpdates => 'تحديثات التطبيق';
+
+  @override
+  String get checkingForUpdates => 'جاري البحث عن تحديثات على GitHub…';
+
+  @override
+  String installedVersion(String version) {
+    return 'الإصدار المثبّت $version';
+  }
+
+  @override
+  String updateAvailable(String version) {
+    return 'الإصدار $version متاح';
+  }
+
+  @override
+  String get noUpdateAvailable => 'أنت على أحدث إصدار.';
+
+  @override
+  String get updateUnsupported => 'التحديثات المتاحة هنا لأجهزة ARM64.';
+
+  @override
+  String get updateCheckFailed =>
+      'تعذّر البحث عن تحديثات. راجع اتصال الإنترنت وجرّب تاني.';
+
+  @override
+  String get updateInstallFailed =>
+      'تعذّر التحقق من التحديث أو فتحه. جرّب تنزّله تاني.';
+
+  @override
+  String get updateInstallPermission =>
+      'اسمح بالتثبيت من بدلاتي في إعدادات أندرويد، وبعدها ارجع واضغط تثبيت التحديث.';
+
+  @override
+  String get downloadUpdate => 'تنزيل وتثبيت';
+
+  @override
+  String get installUpdate => 'تثبيت التحديث';
+
+  @override
+  String get retryUpdate => 'جرّب تاني';
 }

@@ -1,4 +1,4 @@
-package com.badalaty.badalaty
+package com.amwolfstein.badalaty
 
 import android.Manifest
 import android.app.AlarmManager
@@ -43,8 +43,8 @@ class LocalClockReceiver : BroadcastReceiver() {
 }
 
 object WidgetData {
-    const val REMIND = "com.badalaty.badalaty.REMIND"
-    private const val MIDNIGHT = "com.badalaty.badalaty.MIDNIGHT"
+    const val REMIND = "com.amwolfstein.badalaty.REMIND"
+    private const val MIDNIGHT = "com.amwolfstein.badalaty.MIDNIGHT"
     private const val CHANNEL = "allowance_reminders"
 
     fun preferences(context: Context) = context.getSharedPreferences("badalaty_widget", Context.MODE_PRIVATE)
@@ -130,8 +130,6 @@ object WidgetData {
             view.setInt(R.id.widget_divider, "setBackgroundColor", if (dark) 0xFF304560.toInt() else 0xFFD4E1EE.toInt())
 
             val secondary = if (dark) R.drawable.widget_secondary_dark else R.drawable.widget_secondary_light
-            view.bindAction(R.id.widget_travel, R.id.widget_travel_label, R.id.widget_travel_icon,
-                labels.getString(R.string.widget_travel), secondary, ink, open(context, "/entry/travel", 2))
             view.bindAction(R.id.widget_history, R.id.widget_history_label, R.id.widget_history_icon,
                 labels.getString(R.string.widget_history), secondary, ink, open(context, "/history", 3))
         }

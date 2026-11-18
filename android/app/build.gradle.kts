@@ -5,8 +5,11 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+val releaseKeystore = providers.environmentVariable("BADALATY_KEYSTORE_PATH").orNull
+val releasePasswordFile = providers.environmentVariable("BADALATY_KEYSTORE_PASSWORD_FILE").orNull
+
 android {
-    namespace = "com.badalaty.badalaty"
+    namespace = "com.amwolfstein.badalaty"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -17,7 +20,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.badalaty.badalaty"
+        applicationId = "com.amwolfstein.badalaty"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
@@ -30,13 +33,20 @@ android {
         versionName = flutter.versionName
     }
 
-    buildTypes {
-        release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+    if (releaseKeystore != null && releasePasswordFile != null) {
+        val releaseSigning = signingConfigs.create("badalatyRelease") {
+            storeFile = file(releaseKeystore)
+            storeType = "PKCS12"
+            storePassword = file(releasePasswordFile).readText().trim()
+            keyAlias = "badalaty"
+            keyPassword = storePassword
         }
+        buildTypes.named("release") { signingConfig = releaseSigning }
     }
+}
+
+dependencies {
+    implementation("androidx.core:core:1.16.0")
 }
 
 kotlin {

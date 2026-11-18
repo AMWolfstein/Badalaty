@@ -1,4 +1,4 @@
-package com.badalaty.badalaty
+package com.amwolfstein.badalaty
 
 import android.Manifest
 import android.content.Intent
@@ -13,6 +13,19 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        val updates = AndroidUpdates(this)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "badalaty/updates")
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "version" -> result.success(updates.version())
+                    "install" -> {
+                        val build = (call.arguments as? Number)?.toLong()
+                        if (build == null) result.error("invalid_update", null, null)
+                        else updates.install(build, result)
+                    }
+                    else -> result.notImplemented()
+                }
+            }
         channel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "badalaty/platform")
         channel?.setMethodCallHandler { call, result ->
             when (call.method) {

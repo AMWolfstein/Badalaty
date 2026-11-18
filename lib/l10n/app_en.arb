@@ -108,5 +108,31 @@
   "addEntry": "Add entry",
   "reminderBody": "Review today’s allowance entries.",
   "travelReminder": "Today’s travel allowance is missing.",
-  "share": "Share"
+  "share": "Share",
+  "appUpdates": "App updates",
+  "checkingForUpdates": "Checking GitHub for updates…",
+  "installedVersion": "Installed version {version}",
+  "@installedVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "updateAvailable": "Version {version} is available",
+  "@updateAvailable": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "noUpdateAvailable": "You have the latest version.",
+  "updateUnsupported": "This update channel provides ARM64 builds.",
+  "updateCheckFailed": "Could not check for updates. Check your internet connection and try again.",
+  "updateInstallFailed": "The update could not be verified or opened. Try downloading it again.",
+  "updateInstallPermission": "Allow installation from Badalaty in Android settings, then return and tap Install update.",
+  "downloadUpdate": "Download & install",
+  "installUpdate": "Install update",
+  "retryUpdate": "Try again"
 }

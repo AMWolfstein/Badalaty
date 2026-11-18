@@ -108,5 +108,17 @@
   "addEntry": "إضافة سجل",
   "reminderBody": "راجع سجلات بدلات اليوم.",
   "travelReminder": "بدل سفر اليوم لسه مش متسجل.",
-  "share": "مشاركة"
+  "share": "مشاركة",
+  "appUpdates": "تحديثات التطبيق",
+  "checkingForUpdates": "جاري البحث عن تحديثات على GitHub…",
+  "installedVersion": "الإصدار المثبّت {version}",
+  "updateAvailable": "الإصدار {version} متاح",
+  "noUpdateAvailable": "أنت على أحدث إصدار.",
+  "updateUnsupported": "التحديثات المتاحة هنا لأجهزة ARM64.",
+  "updateCheckFailed": "تعذّر البحث عن تحديثات. راجع اتصال الإنترنت وجرّب تاني.",
+  "updateInstallFailed": "تعذّر التحقق من التحديث أو فتحه. جرّب تنزّله تاني.",
+  "updateInstallPermission": "اسمح بالتثبيت من بدلاتي في إعدادات أندرويد، وبعدها ارجع واضغط تثبيت التحديث.",
+  "downloadUpdate": "تنزيل وتثبيت",
+  "installUpdate": "تثبيت التحديث",
+  "retryUpdate": "جرّب تاني"
 }
