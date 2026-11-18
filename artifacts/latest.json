@@ -1,10 +1,10 @@
 {
   "package": "com.amwolfstein.badalaty",
-  "version": "1.0.7",
-  "build": 8,
-  "sha256": "9e30c700750235056bd5a454b9fcee8e44ba42b7ec5bd2c9832afee393fc3f6a",
+  "version": "1.0.8",
+  "build": 9,
+  "sha256": "30aa9488617d0c9541b6bd18d2ed89cc3912507d14605f727c467f95f447af9b",
   "notes": {
-    "ar": "تقارير بفلاتر مدمجة وخط عربي موحّد، وتحديث بطاقات ومجموعات الإعدادات والنماذج.",
-    "en": "Compact report filters, matching typography, and updated cards, forms and settings."
+    "ar": "إضافة سجل من الرئيسية والويدجت باختيارات إجازة، مكتب، وبدل.",
+    "en": "Add records from Home and the widget: leave, office, or allowance."
   }
 }
