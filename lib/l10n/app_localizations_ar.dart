@@ -398,4 +398,46 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get newAssignmentTitle => 'إضافة مأمورية';
+
+  @override
+  String get fromDate => 'من';
+
+  @override
+  String get toDate => 'إلى';
+
+  @override
+  String get allClients => 'كل العملاء';
+
+  @override
+  String get allAssignments => 'كل المأموريات';
+
+  @override
+  String get allCategories => 'كل الأنواع';
+
+  @override
+  String get periodAllowance => 'إجمالي مستحقات الفترة';
+
+  @override
+  String get allowanceBreakdown => 'التوزيع حسب نوع البدل';
+
+  @override
+  String get exportReport => 'تصدير التقرير';
+
+  @override
+  String get chooseAllowanceType => 'اختار نوع البدل';
+
+  @override
+  String get sharedDescription => 'حساب حصة التنقل حسب عدد الزملاء';
+
+  @override
+  String get travelDescription => 'الوجبات والإقامة أثناء المأمورية';
+
+  @override
+  String get rideDescription => 'أوبر أو مصاريف انتقال محلية';
+
+  @override
+  String get seeAll => 'عرض الكل';
+
+  @override
+  String get seeAllowanceTypes => 'عرض الأنواع';
 }

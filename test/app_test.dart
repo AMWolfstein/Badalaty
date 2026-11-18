@@ -138,6 +138,22 @@ void main() {
         await tester.pumpAndSettle();
         expect(tester.widget<GlassNavigationBar>(bar).selectedIndex, index);
         expect(find.widgetWithText(AppBar, label), findsOneWidget);
+        if (index == 3) {
+          for (final filter in ['كل العملاء', 'كل المأموريات', 'كل الأنواع']) {
+            expect(find.text(filter), findsOneWidget);
+          }
+          await tester.tap(find.text('كل الأنواع'));
+          await tester.pumpAndSettle();
+          expect(
+            find.widgetWithText(PopupMenuItem<String>, 'بدل السفر'),
+            findsOneWidget,
+          );
+          await tester.tap(
+            find.widgetWithText(PopupMenuItem<String>, 'بدل السفر'),
+          );
+          await tester.pumpAndSettle();
+          expect(find.text('كل الأنواع'), findsNothing);
+        }
       }
       await tester.tap(tab('الإعدادات'));
       await tester.pumpAndSettle();

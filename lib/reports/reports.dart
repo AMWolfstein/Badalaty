@@ -48,34 +48,75 @@ class _ReportsState extends State<ReportsPage> {
         Row(
           children: [
             Expanded(
-              child: DayField(l.start, start, (v) => setState(() => start = v)),
+              child: DayField(
+                l.fromDate,
+                start,
+                (v) => setState(() => start = v),
+                shortDate: true,
+              ),
             ),
             const SizedBox(width: 7),
             Expanded(
-              child: DayField(l.end, end, (v) => setState(() => end = v)),
+              child: DayField(
+                l.toDate,
+                end,
+                (v) => setState(() => end = v),
+                shortDate: true,
+              ),
             ),
           ],
         ),
-        Choice(l.client, client, {
-          0: l.all,
-          for (final r in records.ofKind('client'))
-            r['id'] as int: r['name'] as String,
-        }, (v) => setState(() => client = v)),
-        Choice(l.assignment, assignment, {
-          0: l.all,
-          for (final r in records.ofKind('assignment'))
-            r['id'] as int: r['name'] as String,
-        }, (v) => setState(() => assignment = v)),
-        Choice(l.category, category, {
-          '': l.all,
-          for (final c in Category.values) c.name: l.categoryName(c.name),
-        }, (v) => setState(() => category = v)),
-        GlassHighlight(
-          label: l.owner,
-          value: context.money(ownerTotal(entries)),
-          detail: Text('${l.count} · ${entries.length}'),
+        Wrap(
+          spacing: 7,
+          children: [
+            Choice(
+              l.client,
+              client,
+              {
+                0: l.allClients,
+                for (final r in records.ofKind('client'))
+                  r['id'] as int: r['name'] as String,
+              },
+              (v) => setState(() => client = v),
+              compact: true,
+            ),
+            Choice(
+              l.assignment,
+              assignment,
+              {
+                0: l.allAssignments,
+                for (final r in records.ofKind('assignment'))
+                  r['id'] as int: r['name'] as String,
+              },
+              (v) => setState(() => assignment = v),
+              compact: true,
+            ),
+            Choice(
+              l.category,
+              category,
+              {
+                '': l.allCategories,
+                for (final c in Category.values) c.name: l.categoryName(c.name),
+              },
+              (v) => setState(() => category = v),
+              compact: true,
+            ),
+          ],
         ),
-        GlassHeading(l.category),
+        GlassHighlight(
+          label: l.periodAllowance,
+          value: context.formattedNumber(ownerTotal(entries)),
+          unit: l.egp,
+          detail: Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            spacing: 8,
+            children: [
+              Text('${dateLabel(context, start)} – ${dateLabel(context, end)}'),
+              Text('${l.count} · ${entries.length}'),
+            ],
+          ),
+        ),
+        GlassHeading(l.allowanceBreakdown),
         for (final kind in Category.values)
           Card(
             child: ListTile(
@@ -85,6 +126,10 @@ class _ReportsState extends State<ReportsPage> {
               ),
               title: Text(l.categoryName(kind.name)),
               trailing: Text(
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.primary,
+                  fontWeight: FontWeight.w700,
+                ),
                 context.money(
                   ownerTotal(
                     entries.where((item) => item['category'] == kind.name),
@@ -93,7 +138,7 @@ class _ReportsState extends State<ReportsPage> {
               ),
             ),
           ),
-        GlassHeading(l.export),
+        GlassHeading(l.exportReport),
         Choice(l.exportLanguage, chosenLanguage, {
           'ar': l.arabic,
           'en': l.english,

@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:intl/intl.dart' show DateFormat;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../allowances/calculation.dart';
@@ -21,10 +22,20 @@ import '../widgets/glass_design.dart';
 enum _SettingsSection { directory, reminders, backups }
 
 class SettingsPage extends ConsumerWidget {
-  const SettingsPage(this.records, {super.key}) : _section = null;
-  const SettingsPage._group(this.records, this._section);
+  const SettingsPage(this.records, {super.key})
+    : _section = null,
+      _directoryKind = 'client',
+      _onDirectoryKind = null;
+  const SettingsPage._group(
+    this.records,
+    this._section,
+    this._directoryKind,
+    this._onDirectoryKind,
+  );
 
   final _SettingsSection? _section;
+  final String _directoryKind;
+  final ValueChanged<String>? _onDirectoryKind;
   final List<Record> records;
 
   Future<void> update(BuildContext context, WidgetRef ref, Record patch) async {
@@ -51,69 +62,85 @@ class SettingsPage extends ConsumerWidget {
     );
     final items = switch (_section) {
       _SettingsSection.directory => <Widget>[
-        for (final kind in ['client', 'employee', 'team'])
-          ExpansionTile(
-            title: Text(switch (kind) {
-              'client' => l.clients,
-              'employee' => l.colleagues,
-              _ => l.teams,
-            }),
-            children: [
-              ListTile(
-                leading: const Icon(Icons.add),
-                title: Text(l.add),
-                onTap: () => editDirectory(
-                  context,
-                  ref,
-                  kind,
-                  employees: records
-                      .ofKind('employee')
-                      .where((r) => r['archived'] != true)
-                      .toList(),
-                ),
+        Wrap(
+          spacing: 8,
+          children: [
+            for (final (kind, label) in [
+              ('client', l.clients),
+              ('employee', l.colleagues),
+              ('team', l.teams),
+            ])
+              ChoiceChip(
+                label: Text(label),
+                selected: _directoryKind == kind,
+                onSelected: (_) => _onDirectoryKind?.call(kind),
               ),
-              for (final record in records.ofKind(kind))
-                ListTile(
-                  title: Text(record['name'] as String),
-                  subtitle: Text(
-                    [
-                      if (record['code'] != null) record['code'],
-                      if (record['archived'] == true) l.archived,
-                    ].join(' · '),
-                  ),
-                  onTap: () => editDirectory(
-                    context,
-                    ref,
-                    kind,
-                    previous: record,
-                    employees: records.ofKind('employee').toList(),
-                  ),
-                  trailing: IconButton(
-                    tooltip: record['archived'] == true
-                        ? l.unarchive
-                        : l.archive,
-                    icon: Icon(
-                      record['archived'] == true
-                          ? Icons.unarchive_outlined
-                          : Icons.archive_outlined,
-                    ),
-                    onPressed: () async {
-                      try {
-                        await ref.saveRecord(kind, {
-                          ...record,
-                          'archived': record['archived'] != true,
-                        }, id: record['id'] as int);
-                      } catch (_) {
-                        if (context.mounted) feedback(context, l.error);
-                      }
-                    },
-                  ),
-                ),
-            ],
+          ],
+        ),
+        GlassHeading(
+          switch (_directoryKind) {
+            'client' => l.clients,
+            'employee' => l.colleagues,
+            _ => l.teams,
+          },
+          action: FilledButton.icon(
+            icon: const Icon(Icons.add, size: 16),
+            label: Text(l.add),
+            onPressed: () => editDirectory(
+              context,
+              ref,
+              _directoryKind,
+              employees: records
+                  .ofKind('employee')
+                  .where((r) => r['archived'] != true)
+                  .toList(),
+            ),
+          ),
+        ),
+        for (final record in records.ofKind(_directoryKind))
+          ListTile(
+            leading: GlassIcon(switch (_directoryKind) {
+              'client' => Icons.business_outlined,
+              'employee' => Icons.person_outline,
+              _ => Icons.groups_outlined,
+            }),
+            title: Text(record['name'] as String),
+            subtitle: Text(
+              [
+                if (record['code'] != null) record['code'],
+                if (record['archived'] == true) l.archived,
+              ].join(' · '),
+            ),
+            onTap: () => editDirectory(
+              context,
+              ref,
+              _directoryKind,
+              previous: record,
+              employees: records.ofKind('employee').toList(),
+            ),
+            trailing: IconButton(
+              tooltip: record['archived'] == true ? l.unarchive : l.archive,
+              icon: Icon(
+                record['archived'] == true
+                    ? Icons.unarchive_outlined
+                    : Icons.archive_outlined,
+              ),
+              onPressed: () async {
+                try {
+                  await ref.saveRecord(_directoryKind, {
+                    ...record,
+                    'archived': record['archived'] != true,
+                  }, id: record['id'] as int);
+                } catch (_) {
+                  if (context.mounted) feedback(context, l.error);
+                }
+              },
+            ),
           ),
       ],
       _SettingsSection.reminders => <Widget>[
         SwitchListTile(
+          secondary: const GlassIcon(Icons.notifications_outlined),
           title: Text(l.reminders),
           value: settings['reminders'] == true,
           onChanged: (value) async {
@@ -124,6 +151,7 @@ class SettingsPage extends ConsumerWidget {
           },
         ),
         ListTile(
+          leading: const GlassIcon(Icons.schedule_outlined),
           title: Text(l.reminderTime),
           subtitle: Text(time.format(context)),
           onTap: () async {
@@ -139,23 +167,21 @@ class SettingsPage extends ConsumerWidget {
             }
           },
         ),
-        ExpansionTile(
-          title: Text(l.workweek),
-          children: [
-            for (var day = 1; day <= 7; day++)
-              CheckboxListTile(
-                title: Text(
-                  MaterialLocalizations.of(context).narrowWeekdays[day % 7],
-                ),
-                value: workweek.contains(day),
-                onChanged: (value) {
-                  final next = {...workweek};
-                  value == true ? next.add(day) : next.remove(day);
-                  update(context, ref, {'workweek': next.toList()});
-                },
-              ),
-          ],
-        ),
+        GlassHeading(l.workweek),
+        for (final day in [6, 7, 1, 2, 3, 4, 5])
+          SwitchListTile(
+            secondary: const GlassIcon(Icons.calendar_today_outlined),
+            title: Text(
+              DateFormat.EEEE(l.localeName)
+                  .format(DateTime(2026, 1, 5 + day - 1)),
+            ),
+            value: workweek.contains(day),
+            onChanged: (value) {
+              final next = {...workweek};
+              value ? next.add(day) : next.remove(day);
+              update(context, ref, {'workweek': next.toList()});
+            },
+          ),
       ],
       _SettingsSection.backups => <Widget>[
         ListTile(
@@ -291,22 +317,29 @@ class SettingsPage extends ConsumerWidget {
           ? Icons.chevron_left
           : Icons.chevron_right,
     ),
-    onTap: () => Navigator.of(context).push<void>(
-      MaterialPageRoute(
-        builder: (_) => Consumer(
-          builder: (context, ref, _) => GlassScaffold(
-            appBar: AppBar(title: Text(title)),
-            body: SafeArea(
-              top: false,
-              child: SettingsPage._group(
-                ref.watch(recordsProvider).value ?? records,
-                section,
+    onTap: () {
+      var kind = 'client';
+      Navigator.of(context).push<void>(
+        MaterialPageRoute(
+          builder: (_) => Consumer(
+            builder: (context, ref, _) => StatefulBuilder(
+              builder: (context, setState) => GlassScaffold(
+                appBar: AppBar(title: Text(title)),
+                body: SafeArea(
+                  top: false,
+                  child: SettingsPage._group(
+                    ref.watch(recordsProvider).value ?? records,
+                    section,
+                    kind,
+                    (value) => setState(() => kind = value),
+                  ),
+                ),
               ),
             ),
           ),
         ),
-      ),
-    ),
+      );
+    },
   );
 }
 

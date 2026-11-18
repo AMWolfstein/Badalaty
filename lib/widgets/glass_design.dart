@@ -1,6 +1,7 @@
+import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
-ThemeData badalatyTheme(Brightness brightness) {
+ThemeData badalatyTheme(Brightness brightness, {required bool arabic}) {
   final dark = brightness == Brightness.dark;
   final scheme =
       ColorScheme.fromSeed(
@@ -34,19 +35,29 @@ ThemeData badalatyTheme(Brightness brightness) {
     borderRadius: BorderRadius.circular(17),
     borderSide: BorderSide(color: rim),
   );
+  final font = arabic ? 'Noto Sans Arabic' : 'Noto Sans';
+  final fallbacks = [if (arabic) 'Noto Sans' else 'Noto Sans Arabic'];
   return ThemeData(
+    fontFamily: font,
+    fontFamilyFallback: fallbacks,
     colorScheme: scheme,
     scaffoldBackgroundColor: scheme.surface,
     appBarTheme: AppBarThemeData(
+      systemOverlayStyle: dark
+          ? SystemUiOverlayStyle.light
+          : SystemUiOverlayStyle.dark,
       backgroundColor: Colors.transparent,
       scrolledUnderElevation: 0,
       surfaceTintColor: Colors.transparent,
       foregroundColor: scheme.onSurface,
       centerTitle: false,
       titleTextStyle: TextStyle(
+        fontFamily: font,
+        fontFamilyFallback: fallbacks,
         color: scheme.onSurface,
-        fontSize: 25,
-        fontWeight: FontWeight.w800,
+        fontSize: 26,
+        fontWeight: FontWeight.w700,
+        height: 1.24,
       ),
     ),
     cardTheme: CardThemeData(
@@ -79,13 +90,19 @@ ThemeData badalatyTheme(Brightness brightness) {
     listTileTheme: ListTileThemeData(
       iconColor: scheme.primary,
       titleTextStyle: TextStyle(
+        fontFamily: font,
+        fontFamilyFallback: fallbacks,
         color: scheme.onSurface,
-        fontSize: 14,
+        fontSize: 13,
         fontWeight: FontWeight.w700,
+        height: 1.38,
       ),
       subtitleTextStyle: TextStyle(
+        fontFamily: font,
+        fontFamilyFallback: fallbacks,
         color: scheme.onSurfaceVariant,
-        fontSize: 12,
+        fontSize: 11,
+        height: 1.4,
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 12),
       minLeadingWidth: 34,
@@ -94,11 +111,20 @@ ThemeData badalatyTheme(Brightness brightness) {
       style: FilledButton.styleFrom(
         minimumSize: const Size(48, 48),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        textStyle: const TextStyle(fontWeight: FontWeight.w700),
+        textStyle: TextStyle(
+          fontFamily: font,
+          fontFamilyFallback: fallbacks,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
+        textStyle: TextStyle(
+          fontFamily: font,
+          fontFamilyFallback: fallbacks,
+          fontWeight: FontWeight.w700,
+        ),
         minimumSize: const Size(48, 48),
         backgroundColor: scheme.primaryContainer,
         side: BorderSide(color: rim),
@@ -232,6 +258,7 @@ class GlassHighlight extends StatelessWidget {
     required this.label,
     required this.value,
     this.detail,
+    this.unit,
     this.isBalance = true,
     super.key,
   });
@@ -239,11 +266,18 @@ class GlassHighlight extends StatelessWidget {
   final String label;
   final String value;
   final Widget? detail;
+  final String? unit;
   final bool isBalance;
 
   @override
   Widget build(BuildContext context) {
     final radius = BorderRadius.circular(25);
+    final valueStyle = TextStyle(
+      color: Colors.white,
+      fontSize: isBalance ? 36 : 21,
+      height: 1.15,
+      fontWeight: FontWeight.w700,
+    );
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: radius,
@@ -299,23 +333,36 @@ class GlassHighlight extends StatelessWidget {
                   vertical: 14,
                 ),
                 child: DefaultTextStyle(
-                  style: const TextStyle(
-                    color: Color(0xFFD5ECFF),
+                  style: TextStyle(
+                    fontFamily: Theme.of(context)
+                        .textTheme
+                        .bodyMedium
+                        ?.fontFamily,
+                    fontFamilyFallback: Theme.of(context)
+                        .textTheme
+                        .bodyMedium
+                        ?.fontFamilyFallback,
+                    color: const Color(0xFFD5ECFF),
                     fontSize: 12,
+                    height: 1.4,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Text(label),
                       const SizedBox(height: 3),
-                      Text(
-                        value,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: isBalance ? 33 : 23,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
+                      if (unit case final unit?)
+                        Row(
+                          spacing: 6,
+                          crossAxisAlignment: CrossAxisAlignment.baseline,
+                          textBaseline: TextBaseline.alphabetic,
+                          children: [
+                            Flexible(child: Text(value, style: valueStyle)),
+                            Text(unit),
+                          ],
+                        )
+                      else
+                        Text(value, style: valueStyle),
                       if (detail != null) ...[
                         const Divider(color: Color(0x52BBE4FF), height: 16),
                         detail!,

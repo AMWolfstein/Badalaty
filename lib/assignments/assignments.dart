@@ -54,21 +54,41 @@ class _AssignmentsPageState extends State<AssignmentsPage> {
           if (trips.any((trip) => trip['status'] == status)) ...[
             GlassHeading(l.statusName(status)),
             for (final trip in trips.where((trip) => trip['status'] == status))
-              Card(
-                child: ListTile(
-                  leading: GlassIcon(
-                    status == 'active'
-                        ? Icons.place_outlined
-                        : Icons.route_outlined,
+              if (status == 'active')
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(25),
+                    onTap: () => context.push('/assignment/${trip['id']}'),
+                    child: GlassHighlight(
+                      label:
+                          widget.records.byId(trip['client'])?['name']
+                              as String? ??
+                          l.client,
+                      value: trip['name'] as String,
+                      isBalance: false,
+                      detail: Text(
+                        '${dateLabel(context, trip['start'] as String)} – ${dateLabel(context, trip['end'] as String)}',
+                      ),
+                    ),
                   ),
-                  title: Text(trip['name'] as String),
-                  subtitle: Text(
-                    '${dateLabel(context, trip['start'] as String)} – ${dateLabel(context, trip['end'] as String)}',
+                )
+              else
+                Card(
+                  child: ListTile(
+                    leading: GlassIcon(
+                      status == 'active'
+                          ? Icons.place_outlined
+                          : Icons.route_outlined,
+                    ),
+                    title: Text(trip['name'] as String),
+                    subtitle: Text(
+                      '${dateLabel(context, trip['start'] as String)} – ${dateLabel(context, trip['end'] as String)}',
+                    ),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => context.push('/assignment/${trip['id']}'),
                   ),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => context.push('/assignment/${trip['id']}'),
                 ),
-              ),
           ],
         FilledButton.icon(
           onPressed: () => context.push('/assignment/new'),
@@ -314,15 +334,27 @@ class _AssignmentEditorState extends ConsumerState<AssignmentEditor> {
                           l.destination,
                           onChanged: (_) => edit(() {}),
                         ),
-                        DayField(
-                          l.start,
-                          start,
-                          (value) => edit(() => start = value),
-                        ),
-                        DayField(
-                          l.end,
-                          end,
-                          (value) => edit(() => end = value),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          spacing: 8,
+                          children: [
+                            Expanded(
+                              child: DayField(
+                                l.start,
+                                start,
+                                (value) => edit(() => start = value),
+                                shortDate: true,
+                              ),
+                            ),
+                            Expanded(
+                              child: DayField(
+                                l.end,
+                                end,
+                                (value) => edit(() => end = value),
+                                shortDate: true,
+                              ),
+                            ),
+                          ],
                         ),
                         Choice(l.status, status, {
                           for (final item in tripStatuses)

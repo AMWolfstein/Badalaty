@@ -236,46 +236,58 @@ class _EntryState extends ConsumerState<EntryPage> {
                     child: ListView(
                       padding: const EdgeInsets.all(16),
                       children: [
-                        DayField(
-                          l.date,
-                          day,
-                          (value) => change(() => day = value),
-                        ),
                         Row(
+                          spacing: 8,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Expanded(
-                              child: SearchRecords(
-                                l.client,
-                                records
-                                    .ofKind('client')
-                                    .where(
-                                      (r) =>
-                                          r['archived'] != true ||
-                                          r['id'] == client,
-                                    ),
-                                {?client},
-                                onPick: (ids) => change(() {
-                                  client = ids.first;
-                                  assignment = null;
-                                }),
+                              child: DayField(
+                                l.date,
+                                day,
+                                (value) => change(() => day = value),
+                                shortDate: true,
                               ),
                             ),
-                            IconButton(
-                              tooltip: l.addClient,
-                              icon: const Icon(Icons.person_add_alt),
-                              onPressed: () async {
-                                final id = await editDirectory(
-                                  context,
-                                  ref,
-                                  'client',
-                                );
-                                if (id != null && mounted) {
-                                  change(() {
-                                    client = id;
-                                    assignment = null;
-                                  });
-                                }
-                              },
+                            Expanded(
+                              flex: 2,
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: SearchRecords(
+                                      l.client,
+                                      records
+                                          .ofKind('client')
+                                          .where(
+                                            (r) =>
+                                                r['archived'] != true ||
+                                                r['id'] == client,
+                                          ),
+                                      {?client},
+                                      onPick: (ids) => change(() {
+                                        client = ids.first;
+                                        assignment = null;
+                                      }),
+                                    ),
+                                  ),
+                                  IconButton(
+                                    tooltip: l.addClient,
+                                    icon: const Icon(Icons.person_add_alt),
+                                    onPressed: () async {
+                                      final id = await editDirectory(
+                                        context,
+                                        ref,
+                                        'client',
+                                      );
+                                      if (id != null && mounted) {
+                                        change(() {
+                                          client = id;
+                                          assignment = null;
+                                        });
+                                      }
+                                    },
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         ),
