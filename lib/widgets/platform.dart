@@ -17,8 +17,14 @@ Future<void> requestReminderPermission() async {
 
 Future<void> publishPlatformData(List<Record> records) async {
   if (!Platform.isAndroid) return;
+  await platformChannel.invokeMethod<void>(
+    'publish',
+    jsonEncode(platformSnapshot(records, DateTime.now())),
+  );
+}
+
+Record platformSnapshot(List<Record> records, DateTime now) {
   final settings = records.settings;
-  final now = DateTime.now();
   final dates = <String, Record>{};
   final weekday = settings['workweek'] as List? ?? [7, 1, 2, 3, 4];
   for (var i = 0; i < 90; i++) {
@@ -54,15 +60,12 @@ Future<void> publishPlatformData(List<Record> records) async {
       if (needsReminder) 'reminder': trip == null ? 'general' : 'travel',
     };
   }
-  await platformChannel.invokeMethod<void>(
-    'publish',
-    jsonEncode({
-      'mode': settings['language'] ?? 'system',
-      'theme': settings['theme'] ?? 'system',
-      'reminders': settings['reminders'] == true,
-      'hour': settings['hour'] ?? 18,
-      'minute': settings['minute'] ?? 0,
-      'days': dates,
-    }),
-  );
+  return {
+    'mode': settings['language'] ?? 'system',
+    'theme': settings['theme'] ?? 'system',
+    'reminders': settings['reminders'] == true,
+    'hour': settings['hour'] ?? 18,
+    'minute': settings['minute'] ?? 0,
+    'days': dates,
+  };
 }
