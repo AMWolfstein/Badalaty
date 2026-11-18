@@ -66,7 +66,7 @@ class Choice<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: 8),
+    padding: const EdgeInsets.only(bottom: 11),
     child: InputDecorator(
       decoration: InputDecoration(
         labelText: label,

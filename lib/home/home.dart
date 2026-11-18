@@ -47,7 +47,7 @@ class HomePage extends StatelessWidget {
               Expanded(
                 child: Padding(
                   padding: EdgeInsetsDirectional.only(
-                    end: category == Category.values.last ? 0 : 7,
+                    end: category == Category.values.last ? 0 : 10,
                   ),
                   child: Card(
                     child: InkWell(

@@ -40,7 +40,11 @@ class _AppState extends ConsumerState<BadalatyApp> with WidgetsBindingObserver {
         builder: (context, state, child) => _Frame(state.uri.path, child),
         routes: [
           for (var i = 0; i < _sections.length; i++)
-            GoRoute(path: _sections[i], builder: (_, _) => _Section(i)),
+            GoRoute(
+              path: _sections[i],
+              pageBuilder: (_, state) =>
+                  NoTransitionPage(key: state.pageKey, child: _Section(i)),
+            ),
         ],
       ),
       GoRoute(path: '/add', builder: (_, _) => const AddEntryPage()),
@@ -78,6 +82,9 @@ class _AppState extends ConsumerState<BadalatyApp> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     _scheduleMidnight();
     if (Platform.isAndroid) {
+      ref.listenManual(recordsProvider, (_, next) {
+        if (next is AsyncData) _publishWidgetsAfterFrame();
+      }, fireImmediately: true);
       platformChannel.setMethodCallHandler((call) async {
         if (call.method == 'route' && mounted) {
           _route(call.arguments as String?);
@@ -105,8 +112,11 @@ class _AppState extends ConsumerState<BadalatyApp> with WidgetsBindingObserver {
     timer = Timer(
       DateTime(now.year, now.month, now.day + 1).difference(now),
       () {
-        if (mounted) setState(() {});
-        _scheduleMidnight();
+        if (mounted) {
+          setState(() {});
+          _publishWidgetsAfterFrame();
+          _scheduleMidnight();
+        }
       },
     );
   }
@@ -116,7 +126,21 @@ class _AppState extends ConsumerState<BadalatyApp> with WidgetsBindingObserver {
     if (state == AppLifecycleState.resumed) {
       _scheduleMidnight();
       setState(() {});
+      _publishWidgetsAfterFrame();
     }
+  }
+
+  void _publishWidgetsAfterFrame() {
+    if (!Platform.isAndroid) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final records = ref.read(recordsProvider).value;
+      if (records != null) {
+        unawaited(
+          publishPlatformData(records).catchError((Object _, StackTrace _) {}),
+        );
+      }
+    });
   }
 
   @override
@@ -152,15 +176,6 @@ class _AppState extends ConsumerState<BadalatyApp> with WidgetsBindingObserver {
         'light' => ThemeMode.light,
         'dark' => ThemeMode.dark,
         _ => ThemeMode.system,
-      },
-      builder: (context, child) {
-        if (records != null) {
-          unawaited(
-            publishPlatformData(records)
-                .catchError((Object _, StackTrace _) {}),
-          );
-        }
-        return child!;
       },
     );
   }
@@ -202,7 +217,9 @@ class _Frame extends StatelessWidget {
       body: SafeArea(bottom: false, child: child),
       bottomNavigationBar: GlassNavigationBar(
         selectedIndex: current,
-        onSelected: (index) => context.go(_sections[index]),
+        onSelected: (index) {
+          if (index != current) context.go(_sections[index]);
+        },
         destinations: [
           for (var i = 0; i < labels.length; i++)
             (icon: icons[i], label: labels[i]),

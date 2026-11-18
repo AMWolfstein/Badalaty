@@ -172,7 +172,7 @@ class _HistoryState extends ConsumerState<HistoryPage> {
                 ...Category.values.map((item) => item.name),
               ])
                 Padding(
-                  padding: const EdgeInsetsDirectional.only(end: 7),
+                  padding: const EdgeInsetsDirectional.only(end: 10),
                   child: ChoiceChip(
                     label: Text(kind.isEmpty ? l.all : l.categoryName(kind)),
                     selected: category == kind,
