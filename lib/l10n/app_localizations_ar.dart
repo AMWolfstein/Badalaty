@@ -380,4 +380,22 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get retryUpdate => 'جرّب تاني';
+
+  @override
+  String get preferencesSection => 'تفضيلات التطبيق';
+
+  @override
+  String get allowanceSettingsSection => 'إدارة البدلات';
+
+  @override
+  String get dataSettingsSection => 'البيانات والتطبيق';
+
+  @override
+  String get directoryTitle => 'العملاء والزملاء والفرق';
+
+  @override
+  String get tripDetailsTitle => 'تفاصيل المأمورية';
+
+  @override
+  String get newAssignmentTitle => 'إضافة مأمورية';
 }

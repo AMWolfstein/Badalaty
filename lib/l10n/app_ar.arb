@@ -120,5 +120,11 @@
   "updateInstallPermission": "اسمح بالتثبيت من بدلاتي في إعدادات أندرويد، وبعدها ارجع واضغط تثبيت التحديث.",
   "downloadUpdate": "تنزيل وتثبيت",
   "installUpdate": "تثبيت التحديث",
-  "retryUpdate": "جرّب تاني"
+  "retryUpdate": "جرّب تاني",
+  "preferencesSection": "تفضيلات التطبيق",
+  "allowanceSettingsSection": "إدارة البدلات",
+  "dataSettingsSection": "البيانات والتطبيق",
+  "directoryTitle": "العملاء والزملاء والفرق",
+  "tripDetailsTitle": "تفاصيل المأمورية",
+  "newAssignmentTitle": "إضافة مأمورية"
 }

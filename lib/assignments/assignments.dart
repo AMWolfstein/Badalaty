@@ -8,34 +8,76 @@ import '../data/store.dart';
 import '../forms.dart';
 import '../l10n/labels.dart';
 import '../widgets/glass_navigation_bar.dart';
+import '../widgets/glass_design.dart';
 
 const tripStatuses = ['planned', 'active', 'completed', 'cancelled'];
 
-class AssignmentsPage extends StatelessWidget {
+class AssignmentsPage extends StatefulWidget {
   const AssignmentsPage(this.records, {super.key});
   final List<Record> records;
 
   @override
-  Widget build(BuildContext context) => ListView(
-    padding: sectionListPadding(context),
-    children: [
-      FilledButton.icon(
-        onPressed: () => context.push('/assignment/new'),
-        icon: const Icon(Icons.add),
-        label: Text(context.l.add),
-      ),
-      for (final trip in records.ofKind('assignment'))
-        Card(
-          child: ListTile(
-            title: Text(trip['name'] as String),
-            subtitle: Text(
-              '${dateLabel(context, trip['start'] as String)} – ${dateLabel(context, trip['end'] as String)}\n${context.l.statusName(trip['status'] as String)}',
-            ),
-            onTap: () => context.push('/assignment/${trip['id']}'),
+  State<AssignmentsPage> createState() => _AssignmentsPageState();
+}
+
+class _AssignmentsPageState extends State<AssignmentsPage> {
+  String? filter;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l;
+    final trips = widget.records
+        .ofKind('assignment')
+        .where((trip) => filter == null || trip['status'] == filter)
+        .toList();
+    return ListView(
+      padding: sectionListPadding(context),
+      children: [
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              for (final status in [null, ...tripStatuses])
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(end: 7),
+                  child: ChoiceChip(
+                    label: Text(status == null ? l.all : l.statusName(status)),
+                    selected: status == filter,
+                    onSelected: (_) => setState(() => filter = status),
+                  ),
+                ),
+            ],
           ),
         ),
-    ],
-  );
+        if (trips.isEmpty) GlassHeading(l.empty),
+        for (final status in ['active', 'planned', 'completed', 'cancelled'])
+          if (trips.any((trip) => trip['status'] == status)) ...[
+            GlassHeading(l.statusName(status)),
+            for (final trip in trips.where((trip) => trip['status'] == status))
+              Card(
+                child: ListTile(
+                  leading: GlassIcon(
+                    status == 'active'
+                        ? Icons.place_outlined
+                        : Icons.route_outlined,
+                  ),
+                  title: Text(trip['name'] as String),
+                  subtitle: Text(
+                    '${dateLabel(context, trip['start'] as String)} – ${dateLabel(context, trip['end'] as String)}',
+                  ),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => context.push('/assignment/${trip['id']}'),
+                ),
+              ),
+          ],
+        FilledButton.icon(
+          onPressed: () => context.push('/assignment/new'),
+          icon: const Icon(Icons.add),
+          label: Text(l.newAssignmentTitle),
+        ),
+      ],
+    );
+  }
 }
 
 class AssignmentEditor extends ConsumerStatefulWidget {
@@ -54,6 +96,7 @@ class _AssignmentEditorState extends ConsumerState<AssignmentEditor> {
       status = 'planned';
   int client = 0;
   bool initialized = false, busy = false, dirty = false;
+  late bool editing = widget.id == null;
 
   @override
   void dispose() {
@@ -115,8 +158,20 @@ class _AssignmentEditorState extends ConsumerState<AssignmentEditor> {
   @override
   Widget build(BuildContext context) {
     final l = context.l;
-    return Scaffold(
-      appBar: AppBar(title: Text(l.assignment)),
+    return GlassScaffold(
+      appBar: AppBar(
+        title: Text(
+          widget.id == null ? l.newAssignmentTitle : l.tripDetailsTitle,
+        ),
+        actions: [
+          if (!editing)
+            IconButton(
+              tooltip: l.edit,
+              icon: const Icon(Icons.edit_outlined),
+              onPressed: () => setState(() => editing = true),
+            ),
+        ],
+      ),
       body: ref
           .watch(recordsProvider)
           .when(
@@ -174,26 +229,68 @@ class _AssignmentEditorState extends ConsumerState<AssignmentEditor> {
                     if (index > 0) {
                       final day = days[index - 1];
                       final recorded = tripEntries.contains(day);
-                      return ListTile(
-                        title: Text(dateLabel(context, day)),
-                        subtitle: Text(
-                          recorded
-                              ? l.recorded
-                              : day.compareTo(today) > 0
-                              ? l.future
-                              : l.missing,
+                      return Card(
+                        child: ListTile(
+                          leading: GlassIcon(
+                            recorded
+                                ? Icons.check_circle_outline
+                                : Icons.event_outlined,
+                            tone: recorded ? 2 : 0,
+                          ),
+                          title: Text(dateLabel(context, day)),
+                          subtitle: Text(
+                            recorded
+                                ? l.recorded
+                                : day.compareTo(today) > 0
+                                ? l.future
+                                : l.missing,
+                          ),
+                          trailing: recorded
+                              ? null
+                              : IconButton(
+                                  tooltip: l.travel,
+                                  icon: const Icon(Icons.add),
+                                  onPressed: dirty || status == 'cancelled'
+                                      ? null
+                                      : () => context.push(
+                                          '/entry/travel?day=$day&trip=${widget.id}',
+                                        ),
+                                ),
                         ),
-                        trailing: recorded
-                            ? null
-                            : IconButton(
-                                tooltip: l.travel,
-                                icon: const Icon(Icons.add),
-                                onPressed: dirty || status == 'cancelled'
-                                    ? null
-                                    : () => context.push(
-                                        '/entry/travel?day=$day&trip=${widget.id}',
-                                      ),
+                      );
+                    }
+                    if (trip != null && !editing) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          GlassHighlight(
+                            label:
+                                records.byId(client)?['name'] as String? ??
+                                l.client,
+                            value: destination.text,
+                            isBalance: false,
+                            detail: Text(
+                              '${dateLabel(context, start)} – ${dateLabel(context, end)} · ${l.statusName(status)}',
+                            ),
+                          ),
+                          if (notes.text.trim().isNotEmpty) ...[
+                            GlassHeading(l.notes),
+                            Card(
+                              child: ListTile(
+                                leading: const GlassIcon(Icons.notes_outlined),
+                                title: Text(notes.text),
                               ),
+                            ),
+                          ],
+                          if (status == 'active')
+                            OutlinedButton(
+                              onPressed: busy
+                                  ? null
+                                  : () => save(records, newStatus: 'completed'),
+                              child: Text(l.completed),
+                            ),
+                          GlassHeading(l.travel),
+                        ],
                       );
                     }
                     return Column(

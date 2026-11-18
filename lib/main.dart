@@ -20,6 +20,7 @@ import 'l10n/labels.dart';
 import 'reports/reports.dart';
 import 'settings/settings.dart';
 import 'widgets/glass_navigation_bar.dart';
+import 'widgets/glass_design.dart';
 import 'widgets/platform.dart';
 
 void main() => runApp(const ProviderScope(child: BadalatyApp()));
@@ -132,12 +133,6 @@ class _AppState extends ConsumerState<BadalatyApp> with WidgetsBindingObserver {
     final records = ref.watch(recordsProvider).value;
     final settings = records?.settings ?? {};
     final language = settings['language'];
-    ThemeData theme(Brightness brightness) => ThemeData(
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: const Color(0xFF0967C6),
-        brightness: brightness,
-      ),
-    );
     return MaterialApp.router(
       routerConfig: router,
       onGenerateTitle: (context) => context.l.title,
@@ -151,8 +146,8 @@ class _AppState extends ConsumerState<BadalatyApp> with WidgetsBindingObserver {
       locale: language == 'ar' || language == 'en'
           ? Locale(language as String)
           : null,
-      theme: theme(Brightness.light),
-      darkTheme: theme(Brightness.dark),
+      theme: badalatyTheme(Brightness.light),
+      darkTheme: badalatyTheme(Brightness.dark),
       themeMode: switch (settings['theme']) {
         'light' => ThemeMode.light,
         'dark' => ThemeMode.dark,
@@ -187,9 +182,23 @@ class _Frame extends StatelessWidget {
       Icons.settings_outlined,
     ];
     final current = _sections.indexOf(path);
-    return Scaffold(
-      extendBody: true,
-      appBar: AppBar(title: Text(current == 0 ? l.title : labels[current])),
+    return GlassScaffold(
+      appBar: AppBar(
+        title: Text(current == 0 ? l.title : labels[current]),
+        actions: [
+          if (current == 0)
+            Padding(
+              padding: const EdgeInsetsDirectional.only(end: 16),
+              child: Image.asset(
+                'assets/branding/badalaty-icon.png',
+                width: 41,
+                height: 41,
+                cacheWidth: 123,
+                excludeFromSemantics: true,
+              ),
+            ),
+        ],
+      ),
       body: SafeArea(bottom: false, child: child),
       bottomNavigationBar: GlassNavigationBar(
         selectedIndex: current,

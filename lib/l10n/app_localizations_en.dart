@@ -380,4 +380,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get retryUpdate => 'Try again';
+
+  @override
+  String get preferencesSection => 'App preferences';
+
+  @override
+  String get allowanceSettingsSection => 'Allowance setup';
+
+  @override
+  String get dataSettingsSection => 'Data and app';
+
+  @override
+  String get directoryTitle => 'Clients, colleagues and teams';
+
+  @override
+  String get tripDetailsTitle => 'Assignment details';
+
+  @override
+  String get newAssignmentTitle => 'Add assignment';
 }
