@@ -24,6 +24,7 @@ extension RecordLabels on AppLocalizations {
     'recorded' => recorded,
     'missing' => missing,
     'leave' => leave,
+    'office' => office,
     'holiday' => holiday,
     'weekend' => weekend,
     'noAllowance' => noAllowance,

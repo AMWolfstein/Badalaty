@@ -440,4 +440,38 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get seeAllowanceTypes => 'عرض الأنواع';
+
+  @override
+  String get office => 'مكتب';
+
+  @override
+  String get recordType => 'نوع السجل';
+
+  @override
+  String get addAllowance => 'إضافة بدل';
+
+  @override
+  String get allowanceOption => 'بدل';
+
+  @override
+  String get allowanceOptionDescription =>
+      'الانتقال أو السفر أو الانتقالات الداخلية';
+
+  @override
+  String get leaveRecordDescription => 'تسجيل يوم إجازة';
+
+  @override
+  String get officeRecordDescription => 'تسجيل يوم في المكتب';
+
+  @override
+  String get recordLeave => 'تسجيل إجازة';
+
+  @override
+  String get recordOffice => 'تسجيل مكتب';
+
+  @override
+  String get recordValue => 'قيمة السجل';
+
+  @override
+  String get saveRecordLabel => 'حفظ السجل';
 }

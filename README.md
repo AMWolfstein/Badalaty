@@ -37,7 +37,7 @@ Reports export six sheets, including an owner-only summary. Choose the workbook 
 
 ## Android widgets and reminders
 
-Add either Badalaty widget from the launcher’s widget picker. Add Allowance opens a category chooser. The expanded widget also opens History. Widgets display committed totals. Settings includes Android notification permission and a configurable reminder time. Android can defer notification delivery during idle modes. Native reminders use a 90-day snapshot refreshed when the app is opened or records are changed.
+Add either Badalaty widget from the launcher’s widget picker. Add Record opens the leave, office, and allowance chooser. Leave and office are recorded at zero, with one day status per date. The expanded widget also opens History. Widgets display committed totals. Settings includes Android notification permission and a configurable reminder time. Android can defer notification delivery during idle modes. Native reminders use a 90-day snapshot refreshed when the app is opened or records are changed.
 
 ## iOS
 

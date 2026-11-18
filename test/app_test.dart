@@ -1,6 +1,7 @@
 import 'package:badalaty/data/state.dart';
 import 'package:badalaty/data/store.dart';
 import 'package:badalaty/main.dart';
+import 'package:badalaty/records/add_record.dart';
 import 'package:badalaty/history/history.dart';
 import 'package:badalaty/widgets/glass_navigation_bar.dart';
 import 'package:drift/native.dart';
@@ -45,6 +46,36 @@ void main() {
       Directionality.of(tester.element(find.text('بدلاتي'))),
       TextDirection.rtl,
     );
+    await tester.tap(find.widgetWithText(FilledButton, 'إضافة سجل'));
+    await tester.pumpAndSettle();
+    expect(find.widgetWithText(ListTile, 'إجازة'), findsOneWidget);
+    expect(find.widgetWithText(ListTile, 'مكتب'), findsOneWidget);
+    await tester.tap(find.widgetWithText(ListTile, 'مكتب'));
+    await tester.pumpAndSettle();
+    expect(find.text('قيمة السجل'), findsOneWidget);
+    await tester.tap(find.widgetWithText(FilledButton, 'حفظ السجل'));
+    await tester.pumpAndSettle();
+    final dayRecord = find.byType(DayRecordTile);
+    await tester.scrollUntilVisible(
+      dayRecord,
+      180,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(
+      find.descendant(of: dayRecord, matching: find.text('مكتب')),
+      findsOneWidget,
+    );
+    await tester.tap(
+      find.descendant(
+        of: find.byType(GlassNavigationBar),
+        matching: find.text('الرئيسية'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'إضافة سجل'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(ListTile, 'بدل'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('بدل السفر'));
     await tester.pumpAndSettle();
     expect(find.text('الوجبات'), findsOneWidget);
@@ -61,6 +92,9 @@ void main() {
       scrollable: find.byType(Scrollable).first,
     );
     await tester.tap(save);
+    await tester.pumpAndSettle();
+    expect(find.byType(AddRecordPage), findsOneWidget);
+    await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
     expect(find.text('بدلاتي'), findsOneWidget);
     final entries = (await db.readAll()).entries;

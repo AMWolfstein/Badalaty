@@ -11,12 +11,22 @@ final recordsProvider = FutureProvider(
   (ref) => ref.watch(storeProvider).readAll(),
 );
 
+const recordedDayStatuses = {'leave', 'office'};
+
 extension Records on List<Record> {
   Iterable<Record> ofKind(String kind) =>
       where((record) => record['kind'] == kind);
   Record? byId(Object? id) => where((record) => record['id'] == id).firstOrNull;
   Record get settings => ofKind('settings').firstOrNull ?? {};
   Iterable<Record> get entries => ofKind('entry');
+  Iterable<Record> get recordedDays =>
+      ofKind('day').where((r) => recordedDayStatuses.contains(r['status']));
+  Iterable<Record> get activity => where(
+    (r) =>
+        r['kind'] == 'entry' ||
+        (r['kind'] == 'day' && recordedDayStatuses.contains(r['status'])),
+  );
+
   Record? activeOn(String day) => ofKind('assignment')
       .where(
         (a) =>

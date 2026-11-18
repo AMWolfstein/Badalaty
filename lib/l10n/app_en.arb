@@ -154,5 +154,16 @@
   "travelDescription": "Meals and accommodation during an assignment",
   "rideDescription": "Ride services and other local transport costs",
   "seeAll": "See all",
-  "seeAllowanceTypes": "See types"
+  "seeAllowanceTypes": "See types",
+  "office": "Office",
+  "recordType": "Record type",
+  "addAllowance": "Add allowance",
+  "allowanceOption": "Allowance",
+  "allowanceOptionDescription": "Shared transport, travel or internal transport",
+  "leaveRecordDescription": "Record a day off",
+  "officeRecordDescription": "Record a day at the office",
+  "recordLeave": "Record leave",
+  "recordOffice": "Record an office day",
+  "recordValue": "Record value",
+  "saveRecordLabel": "Save record"
 }

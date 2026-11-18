@@ -2,7 +2,7 @@
   <string name="app_name">Badalaty</string>
   <string name="widget_compact">Today’s allowance</string>
   <string name="widget_expanded">Allowance overview</string>
-  <string name="widget_add">Add allowance</string>
+  <string name="widget_add">Add record</string>
   <string name="widget_history">History</string>
   <string name="widget_egp">EGP</string>
   <string name="widget_none">No entries</string>

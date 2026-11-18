@@ -9,6 +9,7 @@ import '../data/store.dart';
 import '../forms.dart';
 import '../home/home.dart';
 import '../l10n/labels.dart';
+import '../records/add_record.dart';
 import '../widgets/glass_navigation_bar.dart';
 import '../widgets/glass_design.dart';
 
@@ -27,15 +28,17 @@ String statusOf(List<Record> records, String day, String today) {
 }
 
 class HistoryPage extends ConsumerStatefulWidget {
-  const HistoryPage(this.records, {super.key});
+  const HistoryPage(this.records, {this.initialDay, super.key});
   final List<Record> records;
+  final String? initialDay;
   @override
   ConsumerState<HistoryPage> createState() => _HistoryState();
 }
 
 class _HistoryState extends ConsumerState<HistoryPage> {
-  DateTime month = DateTime.now();
-  String? pickedDay;
+  late final DateTime? _openingDay = DateTime.tryParse(widget.initialDay ?? '');
+  late DateTime month = _openingDay ?? DateTime.now();
+  late String? pickedDay = _openingDay == null ? null : dayKey(_openingDay);
   String search = '', category = '';
   int client = 0, assignment = 0;
   bool showFilters = false;
@@ -50,15 +53,17 @@ class _HistoryState extends ConsumerState<HistoryPage> {
     final days = DateTime(month.year, month.month + 1, 0).day;
     final firstWeekday = MaterialLocalizations.of(context).firstDayOfWeekIndex;
     final offset = (monthStart.weekday % 7 - firstWeekday + 7) % 7;
-    final entries = records.entries.where(
+    final entries = records.activity.where(
       (r) =>
           (pickedDay == null
               ? (r['day'] as String).startsWith(monthKey)
               : r['day'] == pickedDay) &&
           (client == 0 || client == r['client']) &&
           (assignment == 0 || assignment == r['assignment']) &&
-          (category.isEmpty || category == r['category']) &&
-          '${r['clientName']} ${r['notes']} ${r['assignmentName'] ?? ''}'
+          (category.isEmpty || category == (r['category'] ?? r['status'])) &&
+          (r['kind'] == 'day'
+                  ? l.statusName(r['status'] as String)
+                  : '${r['clientName']} ${r['notes']} ${r['assignmentName'] ?? ''}')
               .toLowerCase()
               .contains(search),
     );
@@ -170,11 +175,18 @@ class _HistoryState extends ConsumerState<HistoryPage> {
               for (final kind in [
                 '',
                 ...Category.values.map((item) => item.name),
+                ...recordedDayStatuses,
               ])
                 Padding(
                   padding: const EdgeInsetsDirectional.only(end: 10),
                   child: ChoiceChip(
-                    label: Text(kind.isEmpty ? l.all : l.categoryName(kind)),
+                    label: Text(
+                      kind.isEmpty
+                          ? l.all
+                          : recordedDayStatuses.contains(kind)
+                          ? l.statusName(kind)
+                          : l.categoryName(kind),
+                    ),
                     selected: category == kind,
                     onSelected: (_) => setState(() => category = kind),
                   ),
@@ -191,14 +203,7 @@ class _HistoryState extends ConsumerState<HistoryPage> {
               onSelected: (value) async {
                 try {
                   final day = pickedDay!;
-                  final existing = records
-                      .ofKind('day')
-                      .where((r) => r['day'] == day)
-                      .firstOrNull;
-                  await ref.saveRecord('day', {
-                    'day': day,
-                    'status': value,
-                  }, id: existing?['id'] as int?);
+                  await ref.saveRecord('day', {'day': day, 'status': value});
                 } catch (_) {
                   if (context.mounted) feedback(context, l.error);
                 }
@@ -206,7 +211,7 @@ class _HistoryState extends ConsumerState<HistoryPage> {
               itemBuilder: (_) => [
                 for (final status in [
                   'automatic',
-                  'leave',
+                  ...recordedDayStatuses,
                   'holiday',
                   'weekend',
                   'noAllowance',
@@ -249,34 +254,39 @@ class _HistoryState extends ConsumerState<HistoryPage> {
           Choice(l.category, category, {
             '': l.all,
             for (final c in Category.values) c.name: l.categoryName(c.name),
+            for (final status in recordedDayStatuses)
+              status: l.statusName(status),
           }, (value) => setState(() => category = value)),
         ],
         GlassHeading(l.history),
         if (entries.isEmpty)
           Padding(padding: const EdgeInsets.all(18), child: Text(l.empty)),
         for (final record in entries)
-          EntryTile(
-            record,
-            trailing: PopupMenuButton<String>(
-              itemBuilder: (_) => [
-                PopupMenuItem(value: 'copy', child: Text(l.copy)),
-                PopupMenuItem(value: 'delete', child: Text(l.delete)),
-              ],
-              onSelected: (value) async {
-                final id = record['id'] as int;
-                if (value == 'copy') {
-                  context.push('/entry/${record['category']}?copy=$id');
-                } else if (await confirm(context, l.deleteEntry) && mounted) {
-                  try {
-                    await ref.read(storeProvider).removeEntry(id);
-                    ref.invalidate(recordsProvider);
-                  } catch (_) {
-                    if (context.mounted) feedback(context, l.error);
+          if (record['kind'] == 'day')
+            DayRecordTile(record)
+          else
+            EntryTile(
+              record,
+              trailing: PopupMenuButton<String>(
+                itemBuilder: (_) => [
+                  PopupMenuItem(value: 'copy', child: Text(l.copy)),
+                  PopupMenuItem(value: 'delete', child: Text(l.delete)),
+                ],
+                onSelected: (value) async {
+                  final id = record['id'] as int;
+                  if (value == 'copy') {
+                    context.push('/entry/${record['category']}?copy=$id');
+                  } else if (await confirm(context, l.deleteEntry) && mounted) {
+                    try {
+                      await ref.read(storeProvider).removeEntry(id);
+                      ref.invalidate(recordsProvider);
+                    } catch (_) {
+                      if (context.mounted) feedback(context, l.error);
+                    }
                   }
-                }
-              },
+                },
+              ),
             ),
-          ),
       ],
     );
   }

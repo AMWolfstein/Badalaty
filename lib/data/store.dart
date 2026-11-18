@@ -84,7 +84,14 @@ class Store extends GeneratedDatabase {
     int? id,
   }) => transaction(() async {
     final records = await readAll();
-    final previous = records.where((r) => r['id'] == id).firstOrNull;
+    final previous = records
+        .where(
+          (r) => id != null
+              ? r['id'] == id
+              : kind == 'day' && r['kind'] == 'day' && r['day'] == value['day'],
+        )
+        .firstOrNull;
+    final targetId = previous?['id'] as int?;
     if (id != null && previous?['kind'] != kind) {
       throw StateError('Unknown record');
     }
@@ -152,15 +159,15 @@ class Store extends GeneratedDatabase {
       Variable(payload),
     ];
     final recordId =
-        id ??
+        targetId ??
         await customInsert(
           'INSERT INTO records(kind,day,client,assignment,payload) VALUES(?,?,?,?,?)',
           variables: variables,
         );
-    if (id != null) {
+    if (targetId != null) {
       await customUpdate(
         'UPDATE records SET kind=?,day=?,client=?,assignment=?,payload=? WHERE id=?',
-        variables: [...variables, Variable(id)],
+        variables: [...variables, Variable(targetId)],
       );
     }
     if (kind == 'entry') await _writeAudit(recordId, previous, record);

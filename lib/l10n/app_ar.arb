@@ -140,5 +140,16 @@
   "travelDescription": "الوجبات والإقامة أثناء المأمورية",
   "rideDescription": "أوبر أو مصاريف انتقال محلية",
   "seeAll": "عرض الكل",
-  "seeAllowanceTypes": "عرض الأنواع"
+  "seeAllowanceTypes": "عرض الأنواع",
+  "office": "مكتب",
+  "recordType": "نوع السجل",
+  "addAllowance": "إضافة بدل",
+  "allowanceOption": "بدل",
+  "allowanceOptionDescription": "الانتقال أو السفر أو الانتقالات الداخلية",
+  "leaveRecordDescription": "تسجيل يوم إجازة",
+  "officeRecordDescription": "تسجيل يوم في المكتب",
+  "recordLeave": "تسجيل إجازة",
+  "recordOffice": "تسجيل مكتب",
+  "recordValue": "قيمة السجل",
+  "saveRecordLabel": "حفظ السجل"
 }

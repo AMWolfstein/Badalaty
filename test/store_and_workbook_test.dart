@@ -17,6 +17,31 @@ void main() {
   setUp(() => store = Store(NativeDatabase.memory()));
   tearDown(() => store.close());
 
+  test('office and leave share one day status and export as zero', () async {
+    const day = '2026-11-18';
+    final initialId = await store.save('day', {'day': day, 'status': 'office'});
+    expect((await store.readAll()).recordedDays.single['status'], 'office');
+    final updatedId = await store.save('day', {'day': day, 'status': 'leave'});
+    expect(updatedId, initialId);
+    final records = await store.readAll();
+    expect(records.recordedDays.single['status'], 'leave');
+    expect(records.entries, isEmpty);
+    final archive = ZipDecoder().decodeBytes(
+      workbook(
+        [],
+        AppLocalizationsEn(),
+        'November',
+        dayRecords: records.recordedDays.toList(),
+      ),
+    );
+    final daily = utf8.decode(
+      archive.findFile('xl/worksheets/sheet1.xml')!.content,
+    );
+    expect(daily, contains('Leave'));
+    expect(daily, contains('<c r="I3"><v>0</v></c>'));
+    expect(daily, contains('<c r="J3"><v>0</v></c>'));
+  });
+
   test(
     'records a seven-day assignment and reconciles each allowance type',
     () async {

@@ -442,4 +442,38 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get seeAllowanceTypes => 'See types';
+
+  @override
+  String get office => 'Office';
+
+  @override
+  String get recordType => 'Record type';
+
+  @override
+  String get addAllowance => 'Add allowance';
+
+  @override
+  String get allowanceOption => 'Allowance';
+
+  @override
+  String get allowanceOptionDescription =>
+      'Shared transport, travel or internal transport';
+
+  @override
+  String get leaveRecordDescription => 'Record a day off';
+
+  @override
+  String get officeRecordDescription => 'Record a day at the office';
+
+  @override
+  String get recordLeave => 'Record leave';
+
+  @override
+  String get recordOffice => 'Record an office day';
+
+  @override
+  String get recordValue => 'Record value';
+
+  @override
+  String get saveRecordLabel => 'Save record';
 }
