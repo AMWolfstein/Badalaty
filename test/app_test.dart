@@ -10,6 +10,62 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
 void main() {
+  testWidgets('saves clients and colleagues by name in settings', (
+    tester,
+  ) async {
+    final db = Store(NativeDatabase.memory());
+    addTearDown(db.close);
+    await db.save('settings', {'language': 'ar'});
+    await db.save('team', {'name': 'فريق قديم', 'members': []});
+    final container = ProviderContainer(
+      overrides: [storeProvider.overrideWithValue(db)],
+    );
+    addTearDown(container.dispose);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const BadalatyApp(),
+      ),
+    );
+    await tester.runAsync(() => container.read(recordsProvider.future));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.descendant(
+        of: find.byType(GlassNavigationBar),
+        matching: find.text('الإعدادات'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final directory = find.widgetWithText(ListTile, 'العملاء والزملاء');
+    await tester.scrollUntilVisible(directory, 120);
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, -220));
+    await tester.pumpAndSettle();
+    await tester.tap(directory.hitTestable());
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ChoiceChip), findsNWidgets(2));
+    for (final (kind, label, name) in [
+      ('client', 'العملاء', 'عميل جديد'),
+      ('employee', 'الزملاء', 'زميل جديد'),
+    ]) {
+      await tester.tap(find.widgetWithText(ChoiceChip, label));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'إضافة'));
+      await tester.pumpAndSettle();
+      expect(find.byType(TextField), findsNWidgets(kind == 'employee' ? 2 : 1));
+      await tester.enterText(find.byType(TextField).first, name);
+      await tester.runAsync(() async {
+        await tester.tap(find.widgetWithText(FilledButton, 'حفظ'));
+        final record = (await db.readAll()).ofKind(kind).single;
+        expect(record['name'], name);
+        expect(record['code'], isNull);
+      });
+      await tester.pumpAndSettle();
+      expect(find.text(name), findsOneWidget);
+    }
+    await tester.pumpWidget(const SizedBox());
+  });
+
   testWidgets('switches direction and saves travel through the Arabic form', (
     tester,
   ) async {

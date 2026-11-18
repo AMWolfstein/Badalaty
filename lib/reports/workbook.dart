@@ -65,7 +65,7 @@ Uint8List workbook(
   final rides = <List<Object?>>[
     [l.date, l.client, l.assignment, l.provider, l.amount, l.notes],
   ];
-  final employees = <(String, String), int>{};
+  final employees = <(String, String, int?), int>{};
   final groups = <(String, String, String), List<Record>>{};
   final summary = <List<Object?>>[
     [
@@ -105,7 +105,12 @@ Uint8List workbook(
       final shares = e['shares'] as List;
       for (var i = 0; i < people.length; i++) {
         final person = people[i] as Record;
-        final key = (person['code'] as String, person['name'] as String);
+        final code = person['code'] as String? ?? '';
+        final key = (
+          code,
+          person['name'] as String,
+          code.isEmpty ? person['id'] as int? : null,
+        );
         final share = shares[i] as int;
         employees.update(
           key,

@@ -344,6 +344,12 @@ abstract class AppLocalizations {
   /// **'Employee ID'**
   String get employeeId;
 
+  /// No description provided for @employeeIdOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Employee ID (optional)'**
+  String get employeeIdOptional;
+
   /// No description provided for @colleagues.
   ///
   /// In en, this message translates to:
@@ -355,12 +361,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Clients'**
   String get clients;
-
-  /// No description provided for @teams.
-  ///
-  /// In en, this message translates to:
-  /// **'Saved teams'**
-  String get teams;
 
   /// No description provided for @profile.
   ///
@@ -845,7 +845,7 @@ abstract class AppLocalizations {
   /// No description provided for @directoryTitle.
   ///
   /// In en, this message translates to:
-  /// **'Clients, colleagues and teams'**
+  /// **'Clients and colleagues'**
   String get directoryTitle;
 
   /// No description provided for @tripDetailsTitle.

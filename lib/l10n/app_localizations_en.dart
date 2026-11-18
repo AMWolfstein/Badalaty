@@ -133,13 +133,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get employeeId => 'Employee ID';
 
   @override
+  String get employeeIdOptional => 'Employee ID (optional)';
+
+  @override
   String get colleagues => 'Colleagues';
 
   @override
   String get clients => 'Clients';
-
-  @override
-  String get teams => 'Saved teams';
 
   @override
   String get profile => 'Owner profile';
@@ -391,7 +391,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dataSettingsSection => 'Data and app';
 
   @override
-  String get directoryTitle => 'Clients, colleagues and teams';
+  String get directoryTitle => 'Clients and colleagues';
 
   @override
   String get tripDetailsTitle => 'Assignment details';
