@@ -16,9 +16,15 @@ import '../updates/update_dialog.dart';
 import '../widgets/platform.dart';
 import 'directory.dart';
 import '../widgets/glass_navigation_bar.dart';
+import '../widgets/glass_design.dart';
+
+enum _SettingsSection { directory, reminders, backups }
 
 class SettingsPage extends ConsumerWidget {
-  const SettingsPage(this.records, {super.key});
+  const SettingsPage(this.records, {super.key}) : _section = null;
+  const SettingsPage._group(this.records, this._section);
+
+  final _SettingsSection? _section;
   final List<Record> records;
 
   Future<void> update(BuildContext context, WidgetRef ref, Record patch) async {
@@ -43,45 +49,8 @@ class SettingsPage extends ConsumerWidget {
       hour: settings['hour'] as int? ?? 18,
       minute: settings['minute'] as int? ?? 0,
     );
-    return ListView(
-      padding: sectionListPadding(context),
-      children: [
-        if (Platform.isAndroid)
-          ListTile(
-            leading: const Icon(Icons.system_update_outlined),
-            title: Text(l.appUpdates),
-            onTap: () => showDialog<void>(
-              context: context,
-              barrierDismissible: false,
-              builder: (_) => const UpdateDialog(),
-            ),
-          ),
-        Choice(l.language, settings['language'] as String? ?? 'system', {
-          'system': l.system,
-          'ar': l.arabic,
-          'en': l.english,
-        }, (value) => update(context, ref, {'language': value})),
-        Choice(l.theme, settings['theme'] as String? ?? 'system', {
-          'system': l.system,
-          'light': l.light,
-          'dark': l.dark,
-        }, (value) => update(context, ref, {'theme': value})),
-        ListTile(
-          title: Text(l.profile),
-          subtitle: Text(settings['name'] as String? ?? l.none),
-          onTap: () => showDialog(
-            context: context,
-            builder: (_) => _SettingsEditor(settings, false),
-          ),
-        ),
-        ListTile(
-          title: Text(l.rates),
-          subtitle: Text(l.rounding),
-          onTap: () => showDialog(
-            context: context,
-            builder: (_) => _SettingsEditor(settings, true),
-          ),
-        ),
+    final items = switch (_section) {
+      _SettingsSection.directory => <Widget>[
         for (final kind in ['client', 'employee', 'team'])
           ExpansionTile(
             title: Text(switch (kind) {
@@ -142,6 +111,8 @@ class SettingsPage extends ConsumerWidget {
                 ),
             ],
           ),
+      ],
+      _SettingsSection.reminders => <Widget>[
         SwitchListTile(
           title: Text(l.reminders),
           value: settings['reminders'] == true,
@@ -185,6 +156,8 @@ class SettingsPage extends ConsumerWidget {
               ),
           ],
         ),
+      ],
+      _SettingsSection.backups => <Widget>[
         ListTile(
           title: Text(l.backup),
           leading: const Icon(Icons.download),
@@ -228,8 +201,113 @@ class SettingsPage extends ConsumerWidget {
           },
         ),
       ],
+      null => <Widget>[
+        ListTile(
+          leading: const GlassIcon(Icons.person_outline),
+          title: Text(l.profile),
+          subtitle: Text(settings['name'] as String? ?? l.none),
+          onTap: () => Navigator.of(context).push<void>(
+            MaterialPageRoute(builder: (_) => _SettingsEditor(settings, false)),
+          ),
+        ),
+        GlassHeading(l.preferencesSection),
+        Choice(l.language, settings['language'] as String? ?? 'system', {
+          'system': l.system,
+          'ar': l.arabic,
+          'en': l.english,
+        }, (value) => update(context, ref, {'language': value})),
+        Choice(l.theme, settings['theme'] as String? ?? 'system', {
+          'system': l.system,
+          'light': l.light,
+          'dark': l.dark,
+        }, (value) => update(context, ref, {'theme': value})),
+        _sectionTile(
+          context,
+          _SettingsSection.reminders,
+          l.reminders,
+          Icons.notifications_outlined,
+          subtitle: time.format(context),
+        ),
+        GlassHeading(l.allowanceSettingsSection),
+        ListTile(
+          leading: const GlassIcon(Icons.tune_outlined, tone: 1),
+          title: Text(l.rates),
+          subtitle: Text(l.rounding),
+          onTap: () => Navigator.of(context).push<void>(
+            MaterialPageRoute(builder: (_) => _SettingsEditor(settings, true)),
+          ),
+        ),
+        _sectionTile(
+          context,
+          _SettingsSection.directory,
+          l.directoryTitle,
+          Icons.groups_outlined,
+        ),
+        GlassHeading(l.dataSettingsSection),
+        _sectionTile(
+          context,
+          _SettingsSection.backups,
+          l.backup,
+          Icons.cloud_download_outlined,
+        ),
+        if (Platform.isAndroid)
+          ListTile(
+            leading: const Icon(Icons.system_update_outlined),
+            title: Text(l.appUpdates),
+            onTap: () => showDialog<void>(
+              context: context,
+              barrierDismissible: false,
+              builder: (_) => const UpdateDialog(),
+            ),
+          ),
+      ],
+    };
+    return ListView(
+      padding: sectionListPadding(context),
+      children: [
+        for (final item in items)
+          if (item is ListTile ||
+              item is ExpansionTile ||
+              item is SwitchListTile)
+            Card(child: item)
+          else
+            item,
+      ],
     );
   }
+
+  Widget _sectionTile(
+    BuildContext context,
+    _SettingsSection section,
+    String title,
+    IconData icon, {
+    String? subtitle,
+  }) => ListTile(
+    leading: GlassIcon(icon),
+    title: Text(title),
+    subtitle: subtitle == null ? null : Text(subtitle),
+    trailing: Icon(
+      Directionality.of(context) == TextDirection.rtl
+          ? Icons.chevron_left
+          : Icons.chevron_right,
+    ),
+    onTap: () => Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (_) => Consumer(
+          builder: (context, ref, _) => GlassScaffold(
+            appBar: AppBar(title: Text(title)),
+            body: SafeArea(
+              top: false,
+              child: SettingsPage._group(
+                ref.watch(recordsProvider).value ?? records,
+                section,
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
 }
 
 class _SettingsEditor extends ConsumerStatefulWidget {
@@ -315,32 +393,59 @@ class _SettingsEditorState extends ConsumerState<_SettingsEditor> {
       meals > maxAmount || lodging > maxAmount || percent > 10000;
 
   @override
-  Widget build(BuildContext context) => AlertDialog(
-    title: Text(widget.rates ? context.l.rates : context.l.profile),
-    content: SingleChildScrollView(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          field(
-            a,
-            widget.rates ? context.l.meals : context.l.name,
-            number: widget.rates,
-          ),
-          field(
-            b,
-            widget.rates ? context.l.lodging : context.l.employeeId,
-            number: widget.rates,
-          ),
-          if (widget.rates) field(c, context.l.percentage, number: true),
-        ],
+  Widget build(BuildContext context) {
+    final l = context.l;
+    return GlassScaffold(
+      appBar: AppBar(title: Text(widget.rates ? l.rates : l.profile)),
+      body: SafeArea(
+        top: false,
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  if (widget.rates)
+                    GlassHeading(l.travel)
+                  else
+                    Card(
+                      child: ListTile(
+                        leading: const GlassIcon(Icons.person_outline),
+                        title: Text(
+                          widget.settings['name'] as String? ?? l.profile,
+                        ),
+                        subtitle: Text(
+                          widget.settings['code'] as String? ?? l.employeeId,
+                        ),
+                      ),
+                    ),
+                  field(
+                    a,
+                    widget.rates ? l.meals : l.name,
+                    number: widget.rates,
+                  ),
+                  field(
+                    b,
+                    widget.rates ? l.lodging : l.employeeId,
+                    number: widget.rates,
+                  ),
+                  if (widget.rates) field(c, l.percentage, number: true),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 6, 16, 12),
+              child: SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: busy ? null : save,
+                  child: Text(l.save),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
-    ),
-    actions: [
-      TextButton(
-        onPressed: busy ? null : () => Navigator.pop(context),
-        child: Text(context.l.cancel),
-      ),
-      FilledButton(onPressed: busy ? null : save, child: Text(context.l.save)),
-    ],
-  );
+    );
+  }
 }

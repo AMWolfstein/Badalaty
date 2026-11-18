@@ -134,5 +134,11 @@
   "updateInstallPermission": "Allow installation from Badalaty in Android settings, then return and tap Install update.",
   "downloadUpdate": "Download & install",
   "installUpdate": "Install update",
-  "retryUpdate": "Try again"
+  "retryUpdate": "Try again",
+  "preferencesSection": "App preferences",
+  "allowanceSettingsSection": "Allowance setup",
+  "dataSettingsSection": "Data and app",
+  "directoryTitle": "Clients, colleagues and teams",
+  "tripDetailsTitle": "Assignment details",
+  "newAssignmentTitle": "Add assignment"
 }

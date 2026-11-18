@@ -10,6 +10,7 @@ import '../forms.dart';
 import '../home/home.dart';
 import '../l10n/labels.dart';
 import '../widgets/glass_navigation_bar.dart';
+import '../widgets/glass_design.dart';
 
 String statusOf(List<Record> records, String day, String today) {
   final override = records
@@ -64,88 +65,122 @@ class _HistoryState extends ConsumerState<HistoryPage> {
     return ListView(
       padding: sectionListPadding(context),
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            IconButton(
-              tooltip: l.start,
-              onPressed: () => setState(() {
-                month = DateTime(month.year, month.month - 1);
-                pickedDay = null;
-              }),
-              icon: const Icon(Icons.arrow_back),
-            ),
-            Flexible(
-              child: Text(
-                DateFormat.yMMMM(l.localeName).format(month),
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-            ),
-            IconButton(
-              tooltip: l.end,
-              onPressed: () => setState(() {
-                month = DateTime(month.year, month.month + 1);
-                pickedDay = null;
-              }),
-              icon: const Icon(Icons.arrow_forward),
-            ),
-          ],
-        ),
-        GridView.count(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisCount: 7,
-          children: [
-            for (var i = 0; i < 7; i++)
-              Center(
-                child: Text(
-                  MaterialLocalizations.of(context)
-                      .narrowWeekdays[(i + firstWeekday) % 7],
-                ),
-              ),
-            for (var i = 0; i < offset; i++) const SizedBox(),
-            for (var i = 1; i <= days; i++)
-              Builder(
-                builder: (context) {
-                  final date = dayKey(DateTime(month.year, month.month, i));
-                  final status = statusOf(records, date, today);
-                  return Semantics(
-                    label:
-                        '${dateLabel(context, date)}, ${l.statusName(status)}',
-                    child: InkWell(
-                      onTap: () => setState(
-                        () => pickedDay = pickedDay == date ? null : date,
-                      ),
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: pickedDay == date
-                              ? Theme.of(context).colorScheme.primaryContainer
-                              : null,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              NumberFormat.decimalPattern(l.localeName)
-                                  .format(i),
-                            ),
-                            if (status == 'recorded' || status == 'missing')
-                              Icon(
-                                Icons.circle,
-                                size: 5,
-                                color: status == 'recorded'
-                                    ? Colors.teal
-                                    : Colors.orange,
-                              ),
-                          ],
-                        ),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(8, 4, 8, 10),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      tooltip: l.start,
+                      onPressed: () => setState(() {
+                        month = DateTime(month.year, month.month - 1);
+                        pickedDay = null;
+                      }),
+                      icon: const Icon(Icons.arrow_back),
+                    ),
+                    Flexible(
+                      child: Text(
+                        DateFormat.yMMMM(l.localeName).format(month),
+                        style: Theme.of(context).textTheme.titleMedium,
                       ),
                     ),
-                  );
-                },
-              ),
-          ],
+                    IconButton(
+                      tooltip: l.end,
+                      onPressed: () => setState(() {
+                        month = DateTime(month.year, month.month + 1);
+                        pickedDay = null;
+                      }),
+                      icon: const Icon(Icons.arrow_forward),
+                    ),
+                  ],
+                ),
+                GridView.count(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  crossAxisCount: 7,
+                  children: [
+                    for (var i = 0; i < 7; i++)
+                      Center(
+                        child: Text(
+                          MaterialLocalizations.of(context)
+                              .narrowWeekdays[(i + firstWeekday) % 7],
+                        ),
+                      ),
+                    for (var i = 0; i < offset; i++) const SizedBox(),
+                    for (var i = 1; i <= days; i++)
+                      Builder(
+                        builder: (context) {
+                          final date = dayKey(
+                            DateTime(month.year, month.month, i),
+                          );
+                          final status = statusOf(records, date, today);
+                          return Semantics(
+                            label:
+                                '${dateLabel(context, date)}, ${l.statusName(status)}',
+                            child: InkWell(
+                              onTap: () => setState(
+                                () =>
+                                    pickedDay = pickedDay == date ? null : date,
+                              ),
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  color: pickedDay == date
+                                      ? Theme.of(context)
+                                            .colorScheme
+                                            .primaryContainer
+                                      : null,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      NumberFormat.decimalPattern(l.localeName)
+                                          .format(i),
+                                    ),
+                                    if (status == 'recorded' ||
+                                        status == 'missing')
+                                      Icon(
+                                        Icons.circle,
+                                        size: 5,
+                                        color: status == 'recorded'
+                                            ? Colors.teal
+                                            : Colors.orange,
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              for (final kind in [
+                '',
+                ...Category.values.map((item) => item.name),
+              ])
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(end: 7),
+                  child: ChoiceChip(
+                    label: Text(kind.isEmpty ? l.all : l.categoryName(kind)),
+                    selected: category == kind,
+                    onSelected: (_) => setState(() => category = kind),
+                  ),
+                ),
+            ],
+          ),
         ),
         if (pickedDay != null)
           ListTile(
@@ -216,6 +251,7 @@ class _HistoryState extends ConsumerState<HistoryPage> {
             for (final c in Category.values) c.name: l.categoryName(c.name),
           }, (value) => setState(() => category = value)),
         ],
+        GlassHeading(l.history),
         if (entries.isEmpty)
           Padding(padding: const EdgeInsets.all(18), child: Text(l.empty)),
         for (final record in entries)

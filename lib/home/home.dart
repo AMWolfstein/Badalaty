@@ -7,12 +7,15 @@ import '../data/store.dart';
 import '../forms.dart';
 import '../l10n/labels.dart';
 import '../widgets/glass_navigation_bar.dart';
+import '../widgets/glass_design.dart';
 
 const categoryIcons = {
-  'shared': Icons.groups_outlined,
+  'shared': Icons.directions_car_outlined,
   'travel': Icons.luggage_outlined,
   'ride': Icons.local_taxi_outlined,
 };
+
+const categoryTones = {'shared': 0, 'travel': 1, 'ride': 2};
 
 class HomePage extends StatelessWidget {
   const HomePage(this.records, {super.key});
@@ -31,65 +34,74 @@ class HomePage extends StatelessWidget {
     return ListView(
       padding: sectionListPadding(context),
       children: [
-        Container(
-          padding: const EdgeInsets.all(22),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF071C49), Color(0xFF075BA9)],
-            ),
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                dateLabel(context, day),
-                style: const TextStyle(color: Color(0xFFBDEBFF)),
-              ),
-              const SizedBox(height: 14),
-              Text(l.owner, style: const TextStyle(color: Colors.white)),
-              Text(
-                context.money(ownerTotal(today)),
-                style: const TextStyle(
-                  fontSize: 36,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
+        GlassHighlight(
+          label: '${l.owner} · ${l.today}',
+          value: context.money(ownerTotal(today)),
+          detail: Text('${l.month}  ·  ${context.money(ownerTotal(month))}'),
+        ),
+        GlassHeading(l.addEntry),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (final category in Category.values)
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsetsDirectional.only(
+                    end: category == Category.values.last ? 0 : 7,
+                  ),
+                  child: Card(
+                    child: InkWell(
+                      onTap: () => context.push('/entry/${category.name}'),
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(minHeight: 82),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 7,
+                            vertical: 8,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              GlassIcon(
+                                categoryIcons[category.name]!,
+                                tone: categoryTones[category.name]!,
+                              ),
+                              const SizedBox(height: 5),
+                              Text(
+                                l.categoryName(category.name),
+                                style: Theme.of(context).textTheme.labelMedium,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
-              const Divider(color: Colors.white38),
-              Text(
-                '${l.month}  ·  ${context.money(ownerTotal(month))}',
-                style: const TextStyle(color: Colors.white),
-              ),
-              Text(
-                '${l.count}  ·  ${today.length}',
-                style: const TextStyle(color: Color(0xFFBDEBFF)),
-              ),
-            ],
-          ),
+          ],
         ),
-        if (trip != null)
+        if (trip != null) ...[
+          GlassHeading(l.activeTrip),
           Card(
             child: ListTile(
-              leading: const Icon(Icons.route_outlined),
+              leading: const GlassIcon(Icons.place_outlined),
               title: Text(trip['name'] as String),
-              subtitle: Text(l.activeTrip),
+              subtitle: Text(
+                records.byId(trip['client'])?['name'] as String? ??
+                    l.activeTrip,
+              ),
+              trailing: const Icon(Icons.keyboard_arrow_right),
               onTap: () => context.push('/assignment/${trip['id']}'),
             ),
           ),
-        const SizedBox(height: 16),
-        for (final category in Category.values)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: OutlinedButton.icon(
-              onPressed: () => context.push('/entry/${category.name}'),
-              icon: Icon(categoryIcons[category.name]),
-              label: Text(l.categoryName(category.name)),
-            ),
+        ],
+        GlassHeading(
+          l.recent,
+          action: TextButton(
+            onPressed: () => context.go('/history'),
+            child: Text(l.history),
           ),
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          child: Text(l.recent, style: Theme.of(context).textTheme.titleMedium),
         ),
         if (records.entries.isEmpty) Text(l.empty),
         for (final entry in records.entries.take(5)) EntryTile(entry),
@@ -105,12 +117,23 @@ class EntryTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Card(
     child: ListTile(
-      leading: Icon(categoryIcons[entry['category']]),
-      title: Text(entry['clientName'] as String? ?? context.l.none),
-      subtitle: Text(
-        '${context.l.categoryName(entry['category'] as String)} · ${dateLabel(context, entry['day'] as String)}\n${context.money(entry['owner'] as int)}',
+      leading: GlassIcon(
+        categoryIcons[entry['category']] ?? Icons.receipt_long_outlined,
+        tone: categoryTones[entry['category']] ?? 0,
       ),
-      trailing: trailing,
+      title: Text(context.l.categoryName(entry['category'] as String)),
+      subtitle: Text(
+        '${entry['clientName'] as String? ?? context.l.none} · ${dateLabel(context, entry['day'] as String)}${trailing == null ? '' : '\n${context.money(entry['owner'] as int)}'}',
+      ),
+      trailing:
+          trailing ??
+          Text(
+            context.money(entry['owner'] as int),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.primary,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
       onTap: () =>
           context.push('/entry/${entry['category']}?id=${entry['id']}'),
     ),
@@ -123,16 +146,22 @@ class AddEntryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = context.l;
-    return Scaffold(
+    return GlassScaffold(
       appBar: AppBar(title: Text(l.addEntry)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           for (final category in Category.values)
-            ListTile(
-              leading: Icon(categoryIcons[category.name]),
-              title: Text(l.categoryName(category.name)),
-              onTap: () => context.pushReplacement('/entry/${category.name}'),
+            Card(
+              child: ListTile(
+                leading: GlassIcon(
+                  categoryIcons[category.name]!,
+                  tone: categoryTones[category.name]!,
+                ),
+                title: Text(l.categoryName(category.name)),
+                trailing: const Icon(Icons.keyboard_arrow_right),
+                onTap: () => context.pushReplacement('/entry/${category.name}'),
+              ),
             ),
         ],
       ),

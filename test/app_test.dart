@@ -115,13 +115,23 @@ void main() {
         greaterThan(tester.getCenter(tab('الإعدادات')).dx),
       );
 
+      for (final (index, label) in [
+        (1, 'السجلات'),
+        (2, 'المأموريات'),
+        (3, 'التقارير'),
+      ]) {
+        await tester.tap(tab(label));
+        await tester.pumpAndSettle();
+        expect(tester.widget<GlassNavigationBar>(bar).selectedIndex, index);
+        expect(find.widgetWithText(AppBar, label), findsOneWidget);
+      }
       await tester.tap(tab('الإعدادات'));
       await tester.pumpAndSettle();
       expect(tester.widget<GlassNavigationBar>(bar).selectedIndex, 4);
       expect(find.widgetWithText(AppBar, 'الإعدادات'), findsOneWidget);
 
-      final restore = find.widgetWithText(ListTile, 'استعادة نسخة احتياطية');
-      await tester.scrollUntilVisible(restore, 180);
+      final backups = find.widgetWithText(ListTile, 'النسخ الاحتياطي');
+      await tester.scrollUntilVisible(backups, 180);
       await tester.drag(find.byType(ListView), const Offset(0, -180));
       await tester.pumpAndSettle();
       final glass = find.descendant(
@@ -129,8 +139,14 @@ void main() {
         matching: find.byType(BackdropFilter),
       );
       expect(
-        tester.getBottomLeft(restore).dy,
+        tester.getBottomLeft(backups).dy,
         lessThan(tester.getTopLeft(glass).dy),
+      );
+      await tester.tap(backups);
+      await tester.pumpAndSettle();
+      expect(
+        find.widgetWithText(ListTile, 'استعادة نسخة احتياطية'),
+        findsOneWidget,
       );
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());

@@ -7,6 +7,7 @@ import '../forms.dart';
 import '../l10n/labels.dart';
 import '../settings/directory.dart';
 import 'calculation.dart';
+import '../widgets/glass_design.dart';
 
 class EntryPage extends ConsumerStatefulWidget {
   const EntryPage(
@@ -183,7 +184,7 @@ class _EntryState extends ConsumerState<EntryPage> {
   Widget build(BuildContext context) {
     final l = context.l;
     final data = ref.watch(recordsProvider);
-    return Scaffold(
+    return GlassScaffold(
       appBar: AppBar(title: Text(l.categoryName(widget.category.name))),
       body: data.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -227,172 +228,229 @@ class _EntryState extends ConsumerState<EntryPage> {
                 Navigator.pop(context);
               }
             },
-            child: ListView(
-              padding: const EdgeInsets.all(18),
-              children: [
-                DayField(l.date, day, (value) => change(() => day = value)),
-                Row(
-                  children: [
-                    Expanded(
-                      child: SearchRecords(
-                        l.client,
-                        records
-                            .ofKind('client')
-                            .where(
-                              (r) => r['archived'] != true || r['id'] == client,
+            child: SafeArea(
+              top: false,
+              child: Column(
+                children: [
+                  Expanded(
+                    child: ListView(
+                      padding: const EdgeInsets.all(16),
+                      children: [
+                        DayField(
+                          l.date,
+                          day,
+                          (value) => change(() => day = value),
+                        ),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: SearchRecords(
+                                l.client,
+                                records
+                                    .ofKind('client')
+                                    .where(
+                                      (r) =>
+                                          r['archived'] != true ||
+                                          r['id'] == client,
+                                    ),
+                                {?client},
+                                onPick: (ids) => change(() {
+                                  client = ids.first;
+                                  assignment = null;
+                                }),
+                              ),
                             ),
-                        {?client},
-                        onPick: (ids) => change(() {
-                          client = ids.first;
-                          assignment = null;
-                        }),
-                      ),
+                            IconButton(
+                              tooltip: l.addClient,
+                              icon: const Icon(Icons.person_add_alt),
+                              onPressed: () async {
+                                final id = await editDirectory(
+                                  context,
+                                  ref,
+                                  'client',
+                                );
+                                if (id != null && mounted) {
+                                  change(() {
+                                    client = id;
+                                    assignment = null;
+                                  });
+                                }
+                              },
+                            ),
+                          ],
+                        ),
+                        Choice<int>(
+                          l.assignment,
+                          assignment ?? 0,
+                          {
+                            0: l.none,
+                            for (final trip
+                                in records
+                                    .ofKind('assignment')
+                                    .where((r) => r['client'] == client))
+                              trip['id'] as int: trip['name'] as String,
+                          },
+                          (value) => change(
+                            () => assignment = value == 0 ? null : value,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        field(
+                          location,
+                          l.location,
+                          onChanged: (_) => change(() {}),
+                        ),
+                        if (isTravel) ...[
+                          Card(
+                            child: SwitchListTile(
+                              secondary: const GlassIcon(
+                                Icons.restaurant_outlined,
+                              ),
+                              title: Text(l.meals),
+                              subtitle: Text(context.money(mealRate)),
+                              value: meals,
+                              onChanged: (value) => change(() => meals = value),
+                            ),
+                          ),
+                          Card(
+                            child: SwitchListTile(
+                              secondary: const GlassIcon(
+                                Icons.hotel_outlined,
+                                tone: 1,
+                              ),
+                              title: Text(l.lodging),
+                              subtitle: Text(
+                                context.money(
+                                  accommodationAllowance(
+                                    lodgingRate,
+                                    basisPoints,
+                                  ),
+                                ),
+                              ),
+                              value: lodging,
+                              onChanged: (value) =>
+                                  change(() => lodging = value),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Text(l.rounding),
+                          ),
+                        ] else
+                          field(
+                            base,
+                            isShared ? l.base : l.amount,
+                            number: true,
+                            onChanged: (_) => change(() {}),
+                          ),
+                        if (isShared) ...[
+                          Row(
+                            children: [
+                              Expanded(
+                                child: SearchRecords(
+                                  l.colleagues,
+                                  employees,
+                                  participants,
+                                  multiple: true,
+                                  onPick: (value) =>
+                                      change(() => participants = value),
+                                ),
+                              ),
+                              IconButton(
+                                tooltip: l.addColleague,
+                                icon: const Icon(Icons.person_add_alt),
+                                onPressed: () async {
+                                  final id = await editDirectory(
+                                    context,
+                                    ref,
+                                    'employee',
+                                  );
+                                  if (id != null && mounted) {
+                                    change(() => participants.add(id));
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                          if (teams.isNotEmpty)
+                            Choice<int>(
+                              l.teams,
+                              0,
+                              {
+                                0: l.none,
+                                for (final team in teams)
+                                  team['id'] as int: team['name'] as String,
+                              },
+                              (value) => change(() {
+                                final activeIds = employees
+                                    .map((r) => r['id'])
+                                    .toSet();
+                                participants = Set<int>.from(
+                                  records.byId(value)?['members'] as List? ??
+                                      [],
+                                ).where(activeIds.contains).toSet();
+                              }),
+                            ),
+                          if (split != null)
+                            ListTile(
+                              title: Text(l.total),
+                              trailing: Text(context.money(split.total)),
+                              subtitle: Text(
+                                '${l.people} $count · ${l.multiplier} ×${split.multiplier}',
+                              ),
+                            ),
+                        ],
+                        if (widget.category == Category.ride)
+                          Choice(l.provider, provider, {
+                            'Uber': 'Uber',
+                            'DiDi': 'DiDi',
+                            'inDrive': 'inDrive',
+                            'other': l.other,
+                          }, (value) => change(() => provider = value)),
+                        const SizedBox(height: 12),
+                        field(notes, l.notes, onChanged: (_) => change(() {})),
+                        Card(
+                          color: Theme.of(context).colorScheme.primaryContainer,
+                          child: ListTile(
+                            leading: const GlassIcon(
+                              Icons.account_balance_wallet_outlined,
+                            ),
+                            title: Text(l.owner),
+                            trailing: Text(
+                              context.money(
+                                isTravel
+                                    ? dailyAmount
+                                    : isShared
+                                    ? split?.shares.first ?? 0
+                                    : amount ?? 0,
+                              ),
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.w800),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    IconButton(
-                      tooltip: l.addClient,
-                      icon: const Icon(Icons.person_add_alt),
-                      onPressed: () async {
-                        final id = await editDirectory(context, ref, 'client');
-                        if (id != null && mounted) {
-                          change(() {
-                            client = id;
-                            assignment = null;
-                          });
-                        }
-                      },
-                    ),
-                  ],
-                ),
-                Choice<int>(
-                  l.assignment,
-                  assignment ?? 0,
-                  {
-                    0: l.none,
-                    for (final trip
-                        in records
-                            .ofKind('assignment')
-                            .where((r) => r['client'] == client))
-                      trip['id'] as int: trip['name'] as String,
-                  },
-                  (value) =>
-                      change(() => assignment = value == 0 ? null : value),
-                ),
-                const SizedBox(height: 16),
-                field(location, l.location, onChanged: (_) => change(() {})),
-                if (isTravel) ...[
-                  SwitchListTile(
-                    title: Text(l.meals),
-                    subtitle: Text(context.money(mealRate)),
-                    value: meals,
-                    onChanged: (value) => change(() => meals = value),
-                  ),
-                  SwitchListTile(
-                    title: Text(l.lodging),
-                    subtitle: Text(
-                      context.money(
-                        accommodationAllowance(lodgingRate, basisPoints),
-                      ),
-                    ),
-                    value: lodging,
-                    onChanged: (value) => change(() => lodging = value),
                   ),
                   Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Text(l.rounding),
-                  ),
-                ] else
-                  field(
-                    base,
-                    isShared ? l.base : l.amount,
-                    number: true,
-                    onChanged: (_) => change(() {}),
-                  ),
-                if (isShared) ...[
-                  Row(
-                    children: [
-                      Expanded(
-                        child: SearchRecords(
-                          l.colleagues,
-                          employees,
-                          participants,
-                          multiple: true,
-                          onPick: (value) => change(() => participants = value),
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        FilledButton(
+                          onPressed: busy ? null : () => save(records, false),
+                          child: Text(l.save),
                         ),
-                      ),
-                      IconButton(
-                        tooltip: l.addColleague,
-                        icon: const Icon(Icons.person_add_alt),
-                        onPressed: () async {
-                          final id = await editDirectory(
-                            context,
-                            ref,
-                            'employee',
-                          );
-                          if (id != null && mounted) {
-                            change(() => participants.add(id));
-                          }
-                        },
-                      ),
-                    ],
+                        if (widget.id == null)
+                          OutlinedButton(
+                            onPressed: busy ? null : () => save(records, true),
+                            child: Text(l.saveMore),
+                          ),
+                      ],
+                    ),
                   ),
-                  if (teams.isNotEmpty)
-                    Choice<int>(
-                      l.teams,
-                      0,
-                      {
-                        0: l.none,
-                        for (final team in teams)
-                          team['id'] as int: team['name'] as String,
-                      },
-                      (value) => change(() {
-                        final activeIds = employees.map((r) => r['id']).toSet();
-                        participants = Set<int>.from(
-                          records.byId(value)?['members'] as List? ?? [],
-                        ).where(activeIds.contains).toSet();
-                      }),
-                    ),
-                  if (split != null)
-                    ListTile(
-                      title: Text(l.total),
-                      trailing: Text(context.money(split.total)),
-                      subtitle: Text(
-                        '${l.people} $count · ${l.multiplier} ×${split.multiplier}',
-                      ),
-                    ),
                 ],
-                if (widget.category == Category.ride)
-                  Choice(l.provider, provider, {
-                    'Uber': 'Uber',
-                    'DiDi': 'DiDi',
-                    'inDrive': 'inDrive',
-                    'other': l.other,
-                  }, (value) => change(() => provider = value)),
-                const SizedBox(height: 12),
-                field(notes, l.notes, onChanged: (_) => change(() {})),
-                Card(
-                  child: ListTile(
-                    title: Text(l.owner),
-                    trailing: Text(
-                      context.money(
-                        isTravel
-                            ? dailyAmount
-                            : isShared
-                            ? split?.shares.first ?? 0
-                            : amount ?? 0,
-                      ),
-                    ),
-                  ),
-                ),
-                FilledButton(
-                  onPressed: busy ? null : () => save(records, false),
-                  child: Text(l.save),
-                ),
-                if (widget.id == null)
-                  OutlinedButton(
-                    onPressed: busy ? null : () => save(records, true),
-                    child: Text(l.saveMore),
-                  ),
-              ],
+              ),
             ),
           );
         },

@@ -9,6 +9,8 @@ import '../l10n/app_localizations.dart';
 import '../l10n/labels.dart';
 import 'workbook.dart';
 import '../widgets/glass_navigation_bar.dart';
+import '../widgets/glass_design.dart';
+import '../home/home.dart' show categoryIcons, categoryTones;
 
 class ReportsPage extends StatefulWidget {
   const ReportsPage(this.records, {super.key});
@@ -43,8 +45,17 @@ class _ReportsState extends State<ReportsPage> {
     return ListView(
       padding: sectionListPadding(context),
       children: [
-        DayField(l.start, start, (v) => setState(() => start = v)),
-        DayField(l.end, end, (v) => setState(() => end = v)),
+        Row(
+          children: [
+            Expanded(
+              child: DayField(l.start, start, (v) => setState(() => start = v)),
+            ),
+            const SizedBox(width: 7),
+            Expanded(
+              child: DayField(l.end, end, (v) => setState(() => end = v)),
+            ),
+          ],
+        ),
         Choice(l.client, client, {
           0: l.all,
           for (final r in records.ofKind('client'))
@@ -59,17 +70,34 @@ class _ReportsState extends State<ReportsPage> {
           '': l.all,
           for (final c in Category.values) c.name: l.categoryName(c.name),
         }, (v) => setState(() => category = v)),
+        GlassHighlight(
+          label: l.owner,
+          value: context.money(ownerTotal(entries)),
+          detail: Text('${l.count} · ${entries.length}'),
+        ),
+        GlassHeading(l.category),
+        for (final kind in Category.values)
+          Card(
+            child: ListTile(
+              leading: GlassIcon(
+                categoryIcons[kind.name]!,
+                tone: categoryTones[kind.name]!,
+              ),
+              title: Text(l.categoryName(kind.name)),
+              trailing: Text(
+                context.money(
+                  ownerTotal(
+                    entries.where((item) => item['category'] == kind.name),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        GlassHeading(l.export),
         Choice(l.exportLanguage, chosenLanguage, {
           'ar': l.arabic,
           'en': l.english,
         }, (v) => setState(() => language = v)),
-        Card(
-          child: ListTile(
-            title: Text(l.owner),
-            subtitle: Text('${l.count} · ${entries.length}'),
-            trailing: Text(context.money(ownerTotal(entries))),
-          ),
-        ),
         FilledButton.icon(
           icon: const Icon(Icons.download),
           label: Text(l.export),

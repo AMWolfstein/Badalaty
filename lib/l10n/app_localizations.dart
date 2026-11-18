@@ -823,6 +823,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Try again'**
   String get retryUpdate;
+
+  /// No description provided for @preferencesSection.
+  ///
+  /// In en, this message translates to:
+  /// **'App preferences'**
+  String get preferencesSection;
+
+  /// No description provided for @allowanceSettingsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Allowance setup'**
+  String get allowanceSettingsSection;
+
+  /// No description provided for @dataSettingsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Data and app'**
+  String get dataSettingsSection;
+
+  /// No description provided for @directoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clients, colleagues and teams'**
+  String get directoryTitle;
+
+  /// No description provided for @tripDetailsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Assignment details'**
+  String get tripDetailsTitle;
+
+  /// No description provided for @newAssignmentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add assignment'**
+  String get newAssignmentTitle;
 }
 
 class _AppLocalizationsDelegate
