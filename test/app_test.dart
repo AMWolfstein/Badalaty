@@ -12,7 +12,9 @@ void main() {
   ) async {
     final db = Store(NativeDatabase.memory());
     addTearDown(db.close);
-    final id = await db.save('settings', {'language': 'en'});
+    final id = await db.save('settings', {'language': 'system'});
+    tester.binding.platformDispatcher.localesTestValue = const [Locale('de')];
+    addTearDown(tester.binding.platformDispatcher.clearLocalesTestValue);
     await db.save('client', {'name': 'شركة أ'});
     final container = ProviderContainer(
       overrides: [storeProvider.overrideWithValue(db)],

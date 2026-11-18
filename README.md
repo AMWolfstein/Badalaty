@@ -16,7 +16,7 @@ flutter test
 flutter build apk --release
 ```
 
-The default release build uses debug signing for local installation. The output is `build/app/outputs/flutter-apk/app-release.apk`. Configure your release keystore before distributing a production build.
+The default release build uses debug signing for local installation. The output is `build/app/outputs/flutter-apk/app-release.apk`. Configure your release keystore before distributing a production build. For the ARM64 test build, use `flutter build apk --release --target-platform android-arm64`.
 
 ## Allowances and data
 
