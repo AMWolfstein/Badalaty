@@ -3,12 +3,13 @@
   <string name="widget_compact">Today’s allowance</string>
   <string name="widget_expanded">Allowance overview</string>
   <string name="widget_add">Add entry</string>
-  <string name="widget_travel">Record travel</string>
+  <string name="widget_travel">Travel</string>
   <string name="widget_history">History</string>
   <string name="widget_egp">EGP</string>
-  <string name="widget_none">No entries today</string>
+  <string name="widget_none">No entries</string>
   <string name="reminder_channel">Allowance reminders</string>
   <string name="widget_count">Entries · %1$s</string>
   <string name="reminder_general">Review today’s allowance entries.</string>
   <string name="reminder_travel">Today’s travel allowance is missing.</string>
+  <string name="widget_today_amount">Today’s allowance</string>
 </resources>
