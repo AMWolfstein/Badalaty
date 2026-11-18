@@ -34,6 +34,6 @@ The Flutter iOS runner is included. Build on macOS with Xcode using `flutter bui
 
 ## Design asset
 
-The launcher currently uses a blue calendar placeholder. The approved icon needs the original PNG file for accurate launcher, adaptive foreground and iOS assets.
+The original artwork is in `assets/branding/badalaty-icon.png`. Android uses the artwork for legacy and adaptive color icons and a matching calendar and wallet glyph for themed icons. The iOS icon catalog uses opaque variants of the original artwork.
 
 See [architecture](docs/ARCHITECTURE.md), [requirements](docs/REQUIREMENTS.md) and [implementation plan](docs/IMPLEMENTATION_PLAN.md).
