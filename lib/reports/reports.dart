@@ -42,6 +42,12 @@ class _ReportsState extends State<ReportsPage> {
               (category.isEmpty || category == r['category']),
         )
         .toList();
+    final days = client == 0 && assignment == 0 && category.isEmpty
+        ? records.recordedDays.where((record) {
+            final date = record['day'] as String;
+            return date.compareTo(start) >= 0 && date.compareTo(end) <= 0;
+          }).toList()
+        : <Record>[];
     return ListView(
       padding: sectionListPadding(context),
       children: [
@@ -112,7 +118,7 @@ class _ReportsState extends State<ReportsPage> {
             spacing: 8,
             children: [
               Text('${dateLabel(context, start)} – ${dateLabel(context, end)}'),
-              Text('${l.count} · ${entries.length}'),
+              Text('${l.count} · ${entries.length + days.length}'),
             ],
           ),
         ),
@@ -158,7 +164,12 @@ class _ReportsState extends State<ReportsPage> {
                         '$start – $end | ${locale.client}: ${records.byId(client)?['name'] ?? locale.all} | '
                         '${locale.assignment}: ${records.byId(assignment)?['name'] ?? locale.all} | '
                         '${locale.category}: ${category.isEmpty ? locale.all : locale.categoryName(category)} | ${locale.egp}';
-                    final bytes = workbook(entries, locale, metadata);
+                    final bytes = workbook(
+                      entries,
+                      locale,
+                      metadata,
+                      dayRecords: days,
+                    );
                     if (context.mounted) {
                       await deliverFile(
                         context,

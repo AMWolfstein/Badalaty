@@ -37,7 +37,7 @@ Record platformSnapshot(List<Record> records, DateTime now) {
         .where((record) => record['day'] == key)
         .firstOrNull?['status'];
     final excluded = [
-      'leave',
+      ...recordedDayStatuses,
       'holiday',
       'noAllowance',
       'weekend',
@@ -56,7 +56,7 @@ Record platformSnapshot(List<Record> records, DateTime now) {
       if (trip != null)
         'assignment':
             '${records.byId(trip['client'])?['name'] ?? ''} · ${trip['name']}',
-      'count': entries.length,
+      'count': entries.length + (recordedDayStatuses.contains(status) ? 1 : 0),
       if (needsReminder) 'reminder': trip == null ? 'general' : 'travel',
     };
   }

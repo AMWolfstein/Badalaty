@@ -943,6 +943,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'See types'**
   String get seeAllowanceTypes;
+
+  /// No description provided for @office.
+  ///
+  /// In en, this message translates to:
+  /// **'Office'**
+  String get office;
+
+  /// No description provided for @recordType.
+  ///
+  /// In en, this message translates to:
+  /// **'Record type'**
+  String get recordType;
+
+  /// No description provided for @addAllowance.
+  ///
+  /// In en, this message translates to:
+  /// **'Add allowance'**
+  String get addAllowance;
+
+  /// No description provided for @allowanceOption.
+  ///
+  /// In en, this message translates to:
+  /// **'Allowance'**
+  String get allowanceOption;
+
+  /// No description provided for @allowanceOptionDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared transport, travel or internal transport'**
+  String get allowanceOptionDescription;
+
+  /// No description provided for @leaveRecordDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Record a day off'**
+  String get leaveRecordDescription;
+
+  /// No description provided for @officeRecordDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Record a day at the office'**
+  String get officeRecordDescription;
+
+  /// No description provided for @recordLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Record leave'**
+  String get recordLeave;
+
+  /// No description provided for @recordOffice.
+  ///
+  /// In en, this message translates to:
+  /// **'Record an office day'**
+  String get recordOffice;
+
+  /// No description provided for @recordValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Record value'**
+  String get recordValue;
+
+  /// No description provided for @saveRecordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Save record'**
+  String get saveRecordLabel;
 }
 
 class _AppLocalizationsDelegate

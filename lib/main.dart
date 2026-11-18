@@ -19,6 +19,7 @@ import 'home/home.dart';
 import 'l10n/app_localizations.dart';
 import 'l10n/labels.dart';
 import 'reports/reports.dart';
+import 'records/add_record.dart';
 import 'settings/settings.dart';
 import 'widgets/glass_navigation_bar.dart';
 import 'widgets/glass_design.dart';
@@ -43,12 +44,20 @@ class _AppState extends ConsumerState<BadalatyApp> with WidgetsBindingObserver {
           for (var i = 0; i < _sections.length; i++)
             GoRoute(
               path: _sections[i],
-              pageBuilder: (_, state) =>
-                  NoTransitionPage(key: state.pageKey, child: _Section(i)),
+              pageBuilder: (_, state) => NoTransitionPage(
+                key: state.pageKey,
+                child: _Section(i, day: state.uri.queryParameters['day']),
+              ),
             ),
         ],
       ),
-      GoRoute(path: '/add', builder: (_, _) => const AddEntryPage()),
+      GoRoute(path: '/add', builder: (_, _) => const AddRecordPage()),
+      GoRoute(path: '/allowances/add', builder: (_, _) => const AddEntryPage()),
+      for (final status in recordedDayStatuses)
+        GoRoute(
+          path: '/record/$status',
+          builder: (_, _) => DayRecordPage(status),
+        ),
       GoRoute(
         path: '/entry/:category',
         builder: (_, state) {
@@ -248,8 +257,9 @@ class _Frame extends StatelessWidget {
 }
 
 class _Section extends ConsumerWidget {
-  const _Section(this.index);
+  const _Section(this.index, {this.day});
   final int index;
+  final String? day;
   @override
   Widget build(BuildContext context, WidgetRef ref) => ref
       .watch(recordsProvider)
@@ -263,7 +273,7 @@ class _Section extends ConsumerWidget {
         ),
         data: (records) => switch (index) {
           0 => HomePage(records),
-          1 => HistoryPage(records),
+          1 => HistoryPage(records, key: ValueKey(day), initialDay: day),
           2 => AssignmentsPage(records),
           3 => ReportsPage(records),
           _ => SettingsPage(records),

@@ -24,7 +24,12 @@ String _escape(Object? value) => (value?.toString() ?? '')
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&apos;');
 
-Uint8List workbook(List<Record> entries, AppLocalizations l, String metadata) {
+Uint8List workbook(
+  List<Record> entries,
+  AppLocalizations l,
+  String metadata, {
+  List<Record> dayRecords = const [],
+}) {
   for (final entry in entries) {
     validateEntry(entry);
   }
@@ -156,6 +161,31 @@ Uint8List workbook(List<Record> entries, AppLocalizations l, String metadata) {
     ownerTotal(entries.where((e) => e['category'] == 'ride')),
     ownerTotal(entries),
   ]);
+  for (final record in dayRecords) {
+    final status = record['status'];
+    if (recordedDayStatuses.contains(status)) {
+      daily.add([
+        record['day'],
+        null,
+        null,
+        null,
+        l.statusName(status as String),
+        0,
+        null,
+        null,
+        0,
+        0,
+        null,
+      ]);
+    }
+  }
+  if (dayRecords.isNotEmpty) {
+    final rows = daily.sublist(1)
+      ..sort((a, b) => (b.first as String).compareTo(a.first as String));
+    daily
+      ..removeRange(1, daily.length)
+      ..addAll(rows);
+  }
   final sheets = {
     l.dailySheet: daily,
     l.distributionSheet: distribution,

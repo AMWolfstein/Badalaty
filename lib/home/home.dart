@@ -6,6 +6,7 @@ import '../data/state.dart';
 import '../data/store.dart';
 import '../forms.dart';
 import '../l10n/labels.dart';
+import '../records/add_record.dart';
 import '../widgets/glass_navigation_bar.dart';
 import '../widgets/glass_design.dart';
 
@@ -44,53 +45,11 @@ class HomePage extends StatelessWidget {
             children: [Text(l.month), Text(context.money(ownerTotal(month)))],
           ),
         ),
-        GlassHeading(
-          l.addEntry,
-          action: TextButton(
-            onPressed: () => context.push('/add'),
-            child: Text(l.seeAllowanceTypes),
-          ),
-        ),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            for (final category in Category.values)
-              Expanded(
-                child: Padding(
-                  padding: EdgeInsetsDirectional.only(
-                    end: category == Category.values.last ? 0 : 10,
-                  ),
-                  child: Card(
-                    child: InkWell(
-                      onTap: () => context.push('/entry/${category.name}'),
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(minHeight: 82),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 7,
-                            vertical: 8,
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              GlassIcon(
-                                categoryIcons[category.name]!,
-                                tone: categoryTones[category.name]!,
-                              ),
-                              const SizedBox(height: 5),
-                              Text(
-                                l.categoryName(category.name),
-                                style: Theme.of(context).textTheme.labelMedium,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-          ],
+        const SizedBox(height: 12),
+        FilledButton.icon(
+          onPressed: () => context.push('/add'),
+          icon: const Icon(Icons.add),
+          label: Text(l.addEntry),
         ),
         if (trip != null) ...[
           GlassHeading(l.activeTrip),
@@ -114,8 +73,12 @@ class HomePage extends StatelessWidget {
             child: Text(l.seeAll),
           ),
         ),
-        if (records.entries.isEmpty) Text(l.empty),
-        for (final entry in records.entries.take(5)) EntryTile(entry),
+        if (records.activity.isEmpty) Text(l.empty),
+        for (final record in records.activity.take(5))
+          if (record['kind'] == 'day')
+            DayRecordTile(record)
+          else
+            EntryTile(record),
       ],
     );
   }
@@ -158,7 +121,7 @@ class AddEntryPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = context.l;
     return GlassScaffold(
-      appBar: AppBar(title: Text(l.addEntry)),
+      appBar: AppBar(title: Text(l.addAllowance)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
