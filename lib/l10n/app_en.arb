@@ -86,6 +86,8 @@
   "arabic": "Arabic",
   "english": "English",
   "theme": "Theme",
+  "autoReduceGlass": "Automatically reduce glass quality",
+  "autoReduceGlassDescription": "Lowers the effect quality when rendering slows down.",
   "light": "Light",
   "dark": "Dark",
   "rates": "Default travel rates",

@@ -86,6 +86,8 @@
   "arabic": "العربية",
   "english": "الإنجليزية",
   "theme": "المظهر",
+  "autoReduceGlass": "تخفيض جودة الزجاج تلقائيًا",
+  "autoReduceGlassDescription": "يخفّض جودة التأثير عند بطء العرض.",
   "light": "فاتح",
   "dark": "داكن",
   "rates": "أسعار بدل السفر الافتراضية",

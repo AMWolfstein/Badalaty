@@ -13,6 +13,59 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
 void main() {
+  testWidgets('applies iOS 27 Premium and saves the automatic quality switch', (
+    tester,
+  ) async {
+    final db = Store(NativeDatabase.memory());
+    addTearDown(db.close);
+    await db.save('settings', {'name': 'Owner', 'language': 'ar'});
+    final state = ProviderContainer(
+      overrides: [storeProvider.overrideWithValue(db)],
+    );
+    addTearDown(state.dispose);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: state, child: const BadalatyApp()),
+    );
+    await tester.runAsync(() => state.read(recordsProvider.future));
+    await tester.pumpAndSettle();
+
+    final bar = find.byType(GlassNavigationBar);
+    final glass = liquid.GlassTheme.of(tester.element(bar)).data;
+    expect(glass.style, liquid.GlassStyle.ios27);
+    expect(glass.light.quality, liquid.GlassQuality.premium);
+    expect(glass.dark.quality, liquid.GlassQuality.premium);
+    final adaptiveScope = find.byType(liquid.GlassAdaptiveScope);
+    expect(
+      tester.widget<liquid.GlassAdaptiveScope>(adaptiveScope).maxQuality,
+      liquid.GlassQuality.premium,
+    );
+
+    await tester.tap(
+      find.descendant(of: bar, matching: find.bySemanticsLabel('الإعدادات')),
+    );
+    await tester.pumpAndSettle();
+    final toggle = find.descendant(
+      of: find.widgetWithText(GlassToggleRow, 'تخفيض جودة الزجاج تلقائيًا'),
+      matching: find.byType(liquid.GlassSwitch),
+    );
+    await tester.scrollUntilVisible(toggle, 120);
+    await Scrollable.ensureVisible(tester.element(toggle), alignment: .4);
+    await tester.pumpAndSettle();
+    final tabBarElement = tester.element(bar);
+    expect(tester.widget<liquid.GlassSwitch>(toggle).value, isTrue);
+
+    for (final expected in [false, true]) {
+      await tester.tap(toggle.hitTestable());
+      await tester.pumpAndSettle();
+      expect((await db.readAll()).settings['autoReduceGlass'], expected);
+      expect(tester.widget<liquid.GlassSwitch>(toggle).value, expected);
+      expect(adaptiveScope, expected ? findsOneWidget : findsNothing);
+      expect(tester.element(bar), same(tabBarElement));
+    }
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox());
+  });
+
   testWidgets(
     'history wraps filters and separates the search controls in narrow RTL',
     (tester) async {
