@@ -577,8 +577,14 @@ void main() {
           expect(mirrors, findsNWidgets(rtl ? count : 0));
         }
 
+        final recordPicker = find.byType(AddRecordPage);
         await tester.tap(find.widgetWithText(GlassAction, choose));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 80));
+        final openingX = tester.getTopLeft(recordPicker).dx;
+        expect(rtl ? openingX < 0 : openingX > 0, isTrue);
         await tester.pumpAndSettle();
+        expect(tester.getTopLeft(recordPicker).dx, closeTo(0, .01));
         expectDirection(find.byIcon(Icons.chevron_right), 3);
         expectDirection(
           find.descendant(
@@ -591,10 +597,15 @@ void main() {
         await tester.pumpAndSettle();
         expectDirection(find.byIcon(Icons.chevron_right), 3);
 
-        for (var i = 0; i < 2; i++) {
-          await tester.binding.handlePopRoute();
-          await tester.pumpAndSettle();
-        }
+        await tester.binding.handlePopRoute();
+        await tester.pumpAndSettle();
+        await tester.binding.handlePopRoute();
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 80));
+        final closingX = tester.getTopLeft(recordPicker).dx;
+        expect(rtl ? closingX < 0 : closingX > 0, isTrue);
+        await tester.pumpAndSettle();
+        expect(recordPicker, findsNothing);
         Finder tab(String text) => find.descendant(
           of: find.byType(GlassNavigationBar),
           matching: find.bySemanticsLabel(text),
