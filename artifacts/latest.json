@@ -1,10 +1,10 @@
 {
   "package": "com.amwolfstein.badalaty",
-  "version": "1.0.9",
-  "build": 10,
-  "sha256": "81c8594805ac0de8e377eead7b51b42bdd220f5336dc25a20a7431bf82c61f5b",
+  "version": "1.0.10",
+  "build": 11,
+  "sha256": "5467fcd9001aeddd5c0fdcc0d6b778f6551b870ef5867cce8f37fd106bee7220",
   "notes": {
-    "ar": "إصلاح اتجاه الأسهم بالعربية والإنجليزية، وإضافة العملاء والزملاء بالاسم، وإزالة الفرق المحفوظة.",
-    "en": "Correct navigation arrows in Arabic and English, add clients and colleagues by name, and remove saved teams."
+    "ar": "شاشة إعداد جديدة، والرقم الوظيفي اختياري، وخلفية الويدجت تتبع مظهر التطبيق.",
+    "en": "First-run setup, optional employee ID, and widget backgrounds that follow the app theme."
   }
 }
