@@ -13,6 +13,103 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
 void main() {
+  for (final (
+        locale,
+        appearance,
+        settingsLabel,
+        ratesLabel,
+        mealsLabel,
+        saveLabel,
+      )
+      in [
+        (
+          'ar',
+          'dark',
+          'الإعدادات',
+          'أسعار بدل السفر الافتراضية',
+          'الوجبات',
+          'حفظ',
+        ),
+        ('en', 'light', 'Settings', 'Default travel rates', 'Meals', 'Save'),
+      ]) {
+    testWidgets(
+      'saves travel rates above the keyboard without tab chrome in $locale',
+      (tester) async {
+        tester.view.devicePixelRatio = 1;
+        tester.view.physicalSize = const Size(320, 640);
+        tester.view.padding = const FakeViewPadding(top: 24, bottom: 20);
+        tester.view.viewPadding = const FakeViewPadding(top: 24, bottom: 20);
+        addTearDown(tester.view.reset);
+        final db = Store(NativeDatabase.memory());
+        addTearDown(db.close);
+        await db.save('settings', {
+          'name': 'Owner',
+          'language': locale,
+          'theme': appearance,
+        });
+        final state = ProviderContainer(
+          overrides: [storeProvider.overrideWithValue(db)],
+        );
+        addTearDown(state.dispose);
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: state,
+            child: const BadalatyApp(),
+          ),
+        );
+        await tester.runAsync(() => state.read(recordsProvider.future));
+        await tester.pumpAndSettle();
+        final bar = find.byType(GlassNavigationBar);
+        await tester.tap(
+          find.descendant(
+            of: bar,
+            matching: find.bySemanticsLabel(settingsLabel),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final rates = find.widgetWithText(GlassRow, ratesLabel);
+        await tester.scrollUntilVisible(rates, 130);
+        await Scrollable.ensureVisible(tester.element(rates), alignment: .45);
+        await tester.pumpAndSettle();
+        await tester.tap(rates.hitTestable());
+        await tester.pumpAndSettle();
+        expect(bar, findsNothing);
+        expect(find.byType(GlassHeader), findsOneWidget);
+        expect(find.text(mealsLabel), findsOneWidget);
+
+        final scheme = Theme.of(tester.element(find.text(mealsLabel)))
+            .colorScheme;
+        expect(
+          scheme.brightness,
+          appearance == 'dark' ? Brightness.dark : Brightness.light,
+        );
+        final fieldSurfaces = find.byWidgetPredicate(
+          (widget) =>
+              widget is liquid.GlassContainer &&
+              widget.color == scheme.surfaceContainer,
+        );
+        expect(fieldSurfaces, findsNWidgets(3));
+
+        await tester.enterText(find.byType(EditableText).first, '125');
+        tester.view.viewInsets = const FakeViewPadding(bottom: 235);
+        tester.view.padding = const FakeViewPadding(top: 24);
+        await tester.pumpAndSettle();
+        expect(find.text(mealsLabel), findsOneWidget);
+        final save = find.widgetWithText(GlassAction, saveLabel);
+        expect(save.hitTestable(), findsOneWidget);
+        expect(tester.getBottomRight(save).dy, lessThanOrEqualTo(640 - 235));
+        await tester.tap(save);
+        tester.view.resetViewInsets();
+        await tester.pumpAndSettle();
+        expect((await db.readAll()).settings['mealRate'], 125);
+        expect(bar, findsOneWidget);
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox());
+      },
+    );
+  }
+
   testWidgets(
     'completes setup with a name and saves a shared allowance without an ID',
     (tester) async {

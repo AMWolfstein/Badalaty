@@ -16,6 +16,12 @@ ThemeData badalatyTheme(Brightness brightness, {required bool arabic}) {
         primary: dark ? const Color(0xFF9BD9FF) : const Color(0xFF145C95),
         onPrimary: dark ? const Color(0xFF102C40) : Colors.white,
         surface: dark ? const Color(0xFF182B43) : const Color(0xFFF5FAFF),
+        surfaceContainer: dark
+            ? const Color(0xFF233850)
+            : const Color(0xFFF5FAFF),
+        surfaceContainerHigh: dark
+            ? const Color(0xFF2A425B)
+            : const Color(0xFFE8F4FE),
         onSurface: dark ? const Color(0xFFE9F5FD) : const Color(0xFF122540),
         onSurfaceVariant: dark
             ? const Color(0xFFBCD4E8)
@@ -27,7 +33,7 @@ ThemeData badalatyTheme(Brightness brightness, {required bool arabic}) {
             ? const Color(0xFFBDEAFF)
             : const Color(0xFF124C78),
         outlineVariant: dark
-            ? const Color(0xFF456680)
+            ? const Color(0xFF395570)
             : const Color(0xFFD2E5F6),
       );
   final rim = dark ? const Color(0xFF496783) : Colors.white;
@@ -175,7 +181,8 @@ class GlassScaffold extends StatelessWidget {
           background: const RepaintBoundary(child: _GlassBackground()),
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           extendBody: floatingTabs,
-          topEdgeFade: false,
+          edgeFade: false,
+          enableBackgroundSampling: false,
           appBarHeight: GlassHeader.height,
           bottomBarHeight: glassTabBarSpace,
           appBar: appBar,
@@ -234,14 +241,25 @@ class GlassContentCard extends StatelessWidget {
   final Color? color;
 
   @override
-  Widget build(BuildContext context) => liquid.GlassContainer.card(
-    color: color,
-    surfaceStyle: liquid.GlassSurfaceStyle.solid,
-    shape: const liquid.LiquidRoundedSuperellipse(borderRadius: 25),
-    margin: const EdgeInsets.only(bottom: 10),
-    padding: EdgeInsets.zero,
-    child: child,
-  );
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return liquid.GlassContainer.card(
+      color: color ?? scheme.surfaceContainer,
+      surfaceStyle: liquid.GlassSurfaceStyle.solid,
+      shape: liquid.LiquidRoundedSuperellipse(
+        borderRadius: 21,
+        side: BorderSide(
+          color: theme.brightness == Brightness.dark
+              ? scheme.outlineVariant
+              : Colors.white,
+        ),
+      ),
+      margin: const EdgeInsets.only(bottom: glassItemGap),
+      padding: EdgeInsets.zero,
+      child: child,
+    );
+  }
 }
 
 class GlassRow extends StatelessWidget {
@@ -272,7 +290,11 @@ class GlassRow extends StatelessWidget {
       subtitle: subtitle,
       onTap: onTap,
       onLongPress: onLongPress,
-      titleStyle: theme.textTheme.bodyLarge,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      titleStyle: theme.textTheme.bodyLarge?.copyWith(
+        color: theme.colorScheme.onSurface,
+        fontWeight: FontWeight.w600,
+      ),
       subtitleStyle: theme.textTheme.bodySmall?.copyWith(
         color: theme.colorScheme.onSurfaceVariant,
       ),
@@ -436,7 +458,7 @@ class GlassHeading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(top: 11, bottom: 7),
+    padding: const EdgeInsets.only(top: 7, bottom: 10),
     child: Row(
       children: [
         Expanded(
@@ -753,8 +775,21 @@ class GlassContentGroup extends StatelessWidget {
   final List<Widget> children;
 
   @override
-  Widget build(BuildContext context) => liquid.GlassGroupedSection(
-    surfaceStyle: liquid.GlassSurfaceStyle.solid,
-    children: children,
+  Widget build(BuildContext context) => GlassContentCard(
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (final (index, child) in children.indexed) ...[
+          if (index > 0)
+            liquid.GlassDivider(
+              indent: 14,
+              endIndent: 14,
+              color: Theme.of(context).colorScheme.outlineVariant,
+            ),
+          child,
+        ],
+      ],
+    ),
   );
 }
