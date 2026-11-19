@@ -421,10 +421,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get newAssignmentTitle => 'إضافة مأمورية';
 
   @override
-  String get fromDate => 'من';
+  String get fromDate => 'تاريخ البداية';
 
   @override
-  String get toDate => 'إلى';
+  String get toDate => 'تاريخ النهاية';
 
   @override
   String get allClients => 'كل العملاء';

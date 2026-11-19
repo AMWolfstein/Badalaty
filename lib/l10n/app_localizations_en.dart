@@ -421,10 +421,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get newAssignmentTitle => 'Add assignment';
 
   @override
-  String get fromDate => 'From';
+  String get fromDate => 'Start date';
 
   @override
-  String get toDate => 'To';
+  String get toDate => 'End date';
 
   @override
   String get allClients => 'All clients';

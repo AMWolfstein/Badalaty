@@ -560,6 +560,34 @@ void main() {
         expect(tester.widget<GlassNavigationBar>(bar).selectedIndex, index);
         expect(find.widgetWithText(GlassHeader, label), findsOneWidget);
         if (index == 3) {
+          final startDate = find.widgetWithText(DayField, 'تاريخ البداية');
+          final endDate = find.widgetWithText(DayField, 'تاريخ النهاية');
+          expect(startDate, findsOneWidget);
+          expect(endDate, findsOneWidget);
+          expect(tester.getRect(startDate).top, tester.getRect(endDate).top);
+          expect(
+            tester.getRect(startDate).height,
+            tester.getRect(endDate).height,
+          );
+          expect(
+            tester.getTopLeft(startDate).dx - tester.getTopRight(endDate).dx,
+            10,
+          );
+          for (final field in [startDate, endDate]) {
+            expect(
+              find.descendant(
+                of: field,
+                matching: find.byType(liquid.GlassContainer),
+              ),
+              findsOneWidget,
+            );
+          }
+          await tester.tap(startDate);
+          await tester.pumpAndSettle();
+          expect(find.byType(liquid.GlassDatePicker), findsOneWidget);
+          await tester.tap(find.text('إلغاء'));
+          await tester.pumpAndSettle();
+
           for (final filter in ['كل العملاء', 'كل المأموريات', 'الكل']) {
             expect(find.text(filter), findsOneWidget);
           }
