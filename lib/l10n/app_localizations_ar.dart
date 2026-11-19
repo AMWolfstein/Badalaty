@@ -268,10 +268,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get theme => 'المظهر';
 
   @override
-  String get autoReduceGlass => 'تخفيض جودة الزجاج تلقائيًا';
-
-  @override
-  String get autoReduceGlassDescription => 'يخفّض جودة التأثير عند بطء العرض.';
+  String get premiumGlass => 'جودة الزجاج Premium';
 
   @override
   String get light => 'فاتح';

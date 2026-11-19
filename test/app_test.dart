@@ -13,7 +13,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
 void main() {
-  testWidgets('applies iOS 27 Premium and saves the automatic quality switch', (
+  testWidgets('switches iOS 27 glass directly between Premium and Standard', (
     tester,
   ) async {
     final db = Store(NativeDatabase.memory());
@@ -30,22 +30,22 @@ void main() {
     await tester.pumpAndSettle();
 
     final bar = find.byType(GlassNavigationBar);
-    final glass = liquid.GlassTheme.of(tester.element(bar)).data;
-    expect(glass.style, liquid.GlassStyle.ios27);
-    expect(glass.light.quality, liquid.GlassQuality.premium);
-    expect(glass.dark.quality, liquid.GlassQuality.premium);
-    final adaptiveScope = find.byType(liquid.GlassAdaptiveScope);
-    expect(
-      tester.widget<liquid.GlassAdaptiveScope>(adaptiveScope).maxQuality,
-      liquid.GlassQuality.premium,
-    );
+    void expectQuality(liquid.GlassQuality quality) {
+      final glass = liquid.GlassTheme.of(tester.element(bar)).data;
+      expect(glass.style, liquid.GlassStyle.ios27);
+      expect(glass.light.quality, quality);
+      expect(glass.dark.quality, quality);
+      expect(find.byType(liquid.GlassAdaptiveScope), findsNothing);
+    }
+
+    expectQuality(liquid.GlassQuality.premium);
 
     await tester.tap(
       find.descendant(of: bar, matching: find.bySemanticsLabel('الإعدادات')),
     );
     await tester.pumpAndSettle();
     final toggle = find.descendant(
-      of: find.widgetWithText(GlassToggleRow, 'تخفيض جودة الزجاج تلقائيًا'),
+      of: find.widgetWithText(GlassToggleRow, 'جودة الزجاج Premium'),
       matching: find.byType(liquid.GlassSwitch),
     );
     await tester.scrollUntilVisible(toggle, 120);
@@ -54,12 +54,14 @@ void main() {
     final tabBarElement = tester.element(bar);
     expect(tester.widget<liquid.GlassSwitch>(toggle).value, isTrue);
 
-    for (final expected in [false, true]) {
+    for (final expected in [false, true, false]) {
       await tester.tap(toggle.hitTestable());
       await tester.pumpAndSettle();
-      expect((await db.readAll()).settings['autoReduceGlass'], expected);
+      expect((await db.readAll()).settings['premiumGlass'], expected);
       expect(tester.widget<liquid.GlassSwitch>(toggle).value, expected);
-      expect(adaptiveScope, expected ? findsOneWidget : findsNothing);
+      expectQuality(
+        expected ? liquid.GlassQuality.premium : liquid.GlassQuality.standard,
+      );
       expect(tester.element(bar), same(tabBarElement));
     }
     expect(tester.takeException(), isNull);

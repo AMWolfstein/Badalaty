@@ -614,17 +614,11 @@ abstract class AppLocalizations {
   /// **'Theme'**
   String get theme;
 
-  /// No description provided for @autoReduceGlass.
+  /// No description provided for @premiumGlass.
   ///
   /// In en, this message translates to:
-  /// **'Automatically reduce glass quality'**
-  String get autoReduceGlass;
-
-  /// No description provided for @autoReduceGlassDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Lowers the effect quality when rendering slows down.'**
-  String get autoReduceGlassDescription;
+  /// **'Premium glass quality'**
+  String get premiumGlass;
 
   /// No description provided for @light.
   ///

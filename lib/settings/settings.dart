@@ -53,6 +53,7 @@ class SettingsPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l = context.l;
     final settings = records.settings;
+    final premiumGlass = settings['premiumGlass'] != false;
     final workweek = Set<int>.from(
       settings['workweek'] as List? ?? [7, 1, 2, 3, 4],
     );
@@ -244,11 +245,10 @@ class SettingsPage extends ConsumerWidget {
         }, (value) => update(context, ref, {'theme': value})),
         GlassToggleRow(
           secondary: const GlassIcon(Icons.auto_awesome_outlined),
-          label: l.autoReduceGlass,
-          subtitle: Text(l.autoReduceGlassDescription),
-          value: settings['autoReduceGlass'] != false,
-          onChanged: (value) =>
-              update(context, ref, {'autoReduceGlass': value}),
+          label: l.premiumGlass,
+          subtitle: Text(premiumGlass ? 'Premium' : 'Standard'),
+          value: premiumGlass,
+          onChanged: (value) => update(context, ref, {'premiumGlass': value}),
         ),
         _sectionTile(
           context,
