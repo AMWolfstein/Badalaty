@@ -269,11 +269,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get theme => 'Theme';
 
   @override
-  String get autoReduceGlass => 'Automatically reduce glass quality';
-
-  @override
-  String get autoReduceGlassDescription =>
-      'Lowers the effect quality when rendering slows down.';
+  String get premiumGlass => 'Premium glass quality';
 
   @override
   String get light => 'Light';

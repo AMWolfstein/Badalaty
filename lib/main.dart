@@ -46,10 +46,16 @@ class BadalatyApp extends ConsumerStatefulWidget {
 }
 
 const _ios27Glass = liquid.GlassThemeData.ios27();
-final _premiumGlass = _ios27Glass.copyWith(
-  light: _ios27Glass.light.copyWith(quality: liquid.GlassQuality.premium),
-  dark: _ios27Glass.dark.copyWith(quality: liquid.GlassQuality.premium),
-);
+final _glassThemes = {
+  for (final quality in [
+    liquid.GlassQuality.premium,
+    liquid.GlassQuality.standard,
+  ])
+    quality: _ios27Glass.copyWith(
+      light: _ios27Glass.light.copyWith(quality: quality),
+      dark: _ios27Glass.dark.copyWith(quality: quality),
+    ),
+};
 
 const _sections = ['/', '/history', '/assignments', '/reports', '/settings'];
 
@@ -58,7 +64,6 @@ class _AppState extends ConsumerState<BadalatyApp> with WidgetsBindingObserver {
   String? setupTheme;
   String? pendingWidgetRoute;
   bool? setupRequired;
-  final glassNavigationKey = GlobalKey();
   bool widgetPublishScheduled = false;
   final themes = <bool, (ThemeData, ThemeData)>{};
 
@@ -259,7 +264,7 @@ class _AppState extends ConsumerState<BadalatyApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    final (inSetup, storedLanguage, storedTheme, autoReduceGlass) = ref.watch(
+    final (inSetup, storedLanguage, storedTheme, premiumGlass) = ref.watch(
       recordsProvider.select((data) {
         final records = data.value;
         final settings = records?.settings;
@@ -267,7 +272,7 @@ class _AppState extends ConsumerState<BadalatyApp> with WidgetsBindingObserver {
           records != null && needsSetup(records),
           settings?['language'],
           settings?['theme'],
-          settings?['autoReduceGlass'] != false,
+          settings?['premiumGlass'] != false,
         );
       }),
     );
@@ -300,14 +305,12 @@ class _AppState extends ConsumerState<BadalatyApp> with WidgetsBindingObserver {
           ),
           child: liquid.LiquidGlassWidgets.wrap(
             brightnessResolver: Theme.maybeBrightnessOf,
-            theme: _premiumGlass,
-            adaptiveQuality: autoReduceGlass,
-            adaptiveConfig: const liquid.GlassAdaptiveScopeConfig(
-              maxQuality: liquid.GlassQuality.premium,
-              frostStep: true,
-            ),
+            theme:
+                _glassThemes[premiumGlass
+                    ? liquid.GlassQuality.premium
+                    : liquid.GlassQuality.standard]!,
             respectSystemAccessibility: true,
-            child: KeyedSubtree(key: glassNavigationKey, child: child!),
+            child: child!,
           ),
         );
       },
