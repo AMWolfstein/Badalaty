@@ -13,6 +13,83 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
 void main() {
+  testWidgets(
+    'history wraps filters and separates the search controls in narrow RTL',
+    (tester) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(320, 690);
+      addTearDown(tester.view.reset);
+      final db = Store(NativeDatabase.memory());
+      addTearDown(db.close);
+      await db.save('settings', {
+        'name': 'Owner',
+        'language': 'ar',
+        'theme': 'dark',
+      });
+      final state = ProviderContainer(
+        overrides: [storeProvider.overrideWithValue(db)],
+      );
+      addTearDown(state.dispose);
+      await tester.pumpWidget(
+        UncontrolledProviderScope(container: state, child: const BadalatyApp()),
+      );
+      await tester.runAsync(() => state.read(recordsProvider.future));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.descendant(
+          of: find.byType(GlassNavigationBar),
+          matching: find.bySemanticsLabel('السجلات'),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final searchBar = find.byType(liquid.GlassSearchBar);
+      await tester.scrollUntilVisible(
+        searchBar,
+        100,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await Scrollable.ensureVisible(tester.element(searchBar), alignment: .45);
+      await tester.pumpAndSettle();
+
+      final chips = find.byType(GlassFilterChip);
+      expect(chips, findsNWidgets(6));
+      final bounds = [for (var i = 0; i < 6; i++) tester.getRect(chips.at(i))];
+      expect(bounds.map((rect) => rect.top).toSet().length, greaterThan(1));
+      expect(bounds.first.left, greaterThan(bounds[1].left));
+      for (final rect in bounds) {
+        expect(rect.left, greaterThanOrEqualTo(glassPageInset));
+        expect(rect.right, lessThanOrEqualTo(320 - glassPageInset));
+        expect(
+          tester.getTopLeft(searchBar).dy - rect.bottom,
+          greaterThanOrEqualTo(glassItemGap),
+        );
+      }
+
+      final rides = find.widgetWithText(GlassFilterChip, 'الانتقالات الداخلية');
+      await tester.tap(rides.hitTestable());
+      await tester.pumpAndSettle();
+      expect(tester.widget<GlassFilterChip>(rides).selected, isTrue);
+      final filterButton = find.byTooltip('تصفية السجلات');
+      expect(
+        tester.getTopLeft(searchBar).dx - tester.getTopRight(filterButton).dx,
+        10,
+      );
+      expect(
+        find.byWidgetPredicate((widget) => widget is Choice),
+        findsNothing,
+      );
+      await tester.tap(filterButton.hitTestable());
+      await tester.pumpAndSettle();
+      expect(
+        find.byWidgetPredicate((widget) => widget is Choice),
+        findsNWidgets(3),
+      );
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+
   for (final (
         locale,
         appearance,

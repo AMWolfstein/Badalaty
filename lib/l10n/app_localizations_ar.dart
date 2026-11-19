@@ -241,6 +241,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get search => 'بحث';
 
   @override
+  String get historyFilters => 'تصفية السجلات';
+
+  @override
   String get all => 'الكل';
 
   @override

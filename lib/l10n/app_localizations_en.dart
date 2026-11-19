@@ -242,6 +242,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get search => 'Search';
 
   @override
+  String get historyFilters => 'Filter records';
+
+  @override
   String get all => 'All';
 
   @override

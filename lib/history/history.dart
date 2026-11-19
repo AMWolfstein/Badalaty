@@ -48,6 +48,8 @@ class _HistoryState extends ConsumerState<HistoryPage> {
   Widget build(BuildContext context) {
     final records = widget.records;
     final l = context.l;
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
     final monthStart = DateTime(month.year, month.month);
     final monthKey = dayKey(monthStart).substring(0, 7);
     final today = dayKey(DateTime.now());
@@ -171,30 +173,6 @@ class _HistoryState extends ConsumerState<HistoryPage> {
             ),
           ),
         ),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: [
-              for (final kind in [
-                '',
-                ...Category.values.map((item) => item.name),
-                ...recordedDayStatuses,
-              ])
-                Padding(
-                  padding: const EdgeInsetsDirectional.only(end: 10),
-                  child: GlassFilterChip(
-                    label: kind.isEmpty
-                        ? l.all
-                        : recordedDayStatuses.contains(kind)
-                        ? l.statusName(kind)
-                        : l.categoryName(kind),
-                    selected: category == kind,
-                    onTap: () => setState(() => category = kind),
-                  ),
-                ),
-            ],
-          ),
-        ),
         if (pickedDay != null)
           GlassRow(
             title: Text(dateLabel(context, pickedDay!)),
@@ -223,22 +201,68 @@ class _HistoryState extends ConsumerState<HistoryPage> {
               },
             ),
           ),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final kind in [
+              '',
+              ...Category.values.map((item) => item.name),
+              ...recordedDayStatuses,
+            ])
+              GlassFilterChip(
+                label: kind.isEmpty
+                    ? l.all
+                    : recordedDayStatuses.contains(kind)
+                    ? l.statusName(kind)
+                    : l.categoryName(kind),
+                selected: category == kind,
+                onTap: () => setState(() => category = kind),
+              ),
+          ],
+        ),
+        const SizedBox(height: glassItemGap),
         Row(
+          spacing: 10,
           children: [
             Expanded(
               child: liquid.GlassSearchBar(
                 placeholder: l.search,
+                placeholderStyle: theme.textTheme.bodyMedium?.copyWith(
+                  color: colors.onSurfaceVariant,
+                ),
+                searchIconColor: colors.onSurfaceVariant,
+                clearIconColor: colors.onSurfaceVariant,
+                clearButtonSemanticLabel: l.clear,
+                color: colors.surfaceContainer,
+                height: 48,
                 surfaceStyle: liquid.GlassSurfaceStyle.solid,
                 onChanged: (v) => setState(() => search = v.toLowerCase()),
               ),
             ),
-            GlassIconAction(
-              tooltip: l.category,
-              onPressed: () => setState(() => showFilters = !showFilters),
-              icon: const Icon(Icons.tune),
+            Semantics(
+              expanded: showFilters,
+              child: Tooltip(
+                message: l.historyFilters,
+                child: liquid.GlassIconButton(
+                  semanticLabel: l.historyFilters,
+                  size: 48,
+                  iconSize: 21,
+                  color: showFilters
+                      ? colors.primaryContainer
+                      : colors.surfaceContainer,
+                  iconColor: showFilters
+                      ? colors.onPrimaryContainer
+                      : colors.onSurface,
+                  surfaceStyle: liquid.GlassSurfaceStyle.solid,
+                  onPressed: () => setState(() => showFilters = !showFilters),
+                  icon: const Icon(Icons.tune),
+                ),
+              ),
             ),
           ],
         ),
+        const SizedBox(height: glassItemGap),
         if (showFilters) ...[
           Choice(l.client, client, {
             0: l.all,
