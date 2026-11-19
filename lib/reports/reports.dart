@@ -61,7 +61,7 @@ class _ReportsState extends State<ReportsPage> {
                 shortDate: true,
               ),
             ),
-            const SizedBox(width: 7),
+            const SizedBox(width: 10),
             Expanded(
               child: DayField(
                 l.toDate,

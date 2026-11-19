@@ -92,24 +92,26 @@ class DayField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => GlassContentCard(
-    child: liquid.GlassPicker(
-      value: shortDate
-          ? DateFormat.MMMd(context.l.localeName).format(DateTime.parse(day))
-          : dateLabel(context, day),
-      semanticLabel: label,
-      surfaceStyle: liquid.GlassSurfaceStyle.solid,
-      icon: Icon(
-        Icons.calendar_today_outlined,
-        size: 17,
-        color: Theme.of(context).colorScheme.primary,
+    child: Material(
+      type: MaterialType.transparency,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(21),
+        onTap: () async {
+          final result = await glassDateTimePicker(
+            context,
+            initial: DateTime.parse(day),
+          );
+          if (result != null && context.mounted) onChange(dayKey(result));
+        },
+        child: _FieldContent(
+          label: label,
+          value: shortDate
+              ? DateFormat.MMMd(context.l.localeName)
+                    .format(DateTime.parse(day))
+              : dateLabel(context, day),
+          icon: Icons.calendar_today_outlined,
+        ),
       ),
-      onTap: () async {
-        final result = await glassDateTimePicker(
-          context,
-          initial: DateTime.parse(day),
-        );
-        if (result != null && context.mounted) onChange(dayKey(result));
-      },
     ),
   );
 }

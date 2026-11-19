@@ -905,13 +905,13 @@ abstract class AppLocalizations {
   /// No description provided for @fromDate.
   ///
   /// In en, this message translates to:
-  /// **'From'**
+  /// **'Start date'**
   String get fromDate;
 
   /// No description provided for @toDate.
   ///
   /// In en, this message translates to:
-  /// **'To'**
+  /// **'End date'**
   String get toDate;
 
   /// No description provided for @allClients.
