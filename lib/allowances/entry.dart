@@ -107,8 +107,7 @@ class _EntryState extends ConsumerState<EntryPage> {
         (isTravel ? !meals && !lodging : value == null || value > maxAmount) ||
         (isShared &&
             existing == null &&
-            ('${settings['name'] ?? ''}'.isEmpty ||
-                '${settings['code'] ?? ''}'.isEmpty)) ||
+            ((settings['name'] as String?) ?? '').trim().isEmpty) ||
         (trip != null &&
             (trip['client'] != client ||
                 day.compareTo(trip['start'] as String) < 0 ||

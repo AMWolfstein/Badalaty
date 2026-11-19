@@ -133,6 +133,21 @@ class AppLocalizationsAr extends AppLocalizations {
   String get employeeId => 'الرقم الوظيفي';
 
   @override
+  String get setupWelcome => 'أهلًا بيك في بدلاتي';
+
+  @override
+  String get setupIntro => 'ضيف اسمك عشان تبدأ تسجّل بدلاتك.';
+
+  @override
+  String get setupName => 'اسمك (مطلوب)';
+
+  @override
+  String get setupStart => 'ابدأ استخدام بدلاتي';
+
+  @override
+  String get setupEdit => 'تقدر تعدّل اختياراتك من الإعدادات.';
+
+  @override
   String get employeeIdOptional => 'الرقم الوظيفي (اختياري)';
 
   @override

@@ -10,12 +10,82 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
 void main() {
+  testWidgets(
+    'completes setup with a name and saves a shared allowance without an ID',
+    (tester) async {
+      final db = Store(NativeDatabase.memory());
+      addTearDown(db.close);
+      await db.save('client', {'name': 'شركة أ'});
+      final state = ProviderContainer(
+        overrides: [storeProvider.overrideWithValue(db)],
+      );
+      addTearDown(state.dispose);
+      await tester.pumpWidget(
+        UncontrolledProviderScope(container: state, child: const BadalatyApp()),
+      );
+      await tester.runAsync(() => state.read(recordsProvider.future));
+      await tester.pumpAndSettle();
+
+      final begin = find.widgetWithText(FilledButton, 'Get started');
+      expect(tester.widget<FilledButton>(begin).onPressed, isNull);
+      await tester.tap(find.text('Language'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('العربية'));
+      await tester.pumpAndSettle();
+      expect(find.text('أهلًا بيك في بدلاتي'), findsOneWidget);
+      await tester.tap(find.text('المظهر'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('داكن'));
+      await tester.pumpAndSettle();
+
+      final name = find.byType(TextField).first;
+      await tester.enterText(name, '  أحمد  ');
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.widgetWithText(FilledButton, 'ابدأ استخدام بدلاتي'),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('بدلاتي'), findsOneWidget);
+      final settings = (await db.readAll()).settings;
+      expect(settings['name'], 'أحمد');
+      expect(settings['code'], isNull);
+      expect(settings['language'], 'ar');
+      expect(settings['theme'], 'dark');
+
+      await tester.tap(find.widgetWithText(FilledButton, 'إضافة سجل'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(ListTile, 'بدل'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('بدل الانتقال'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('العميل'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('شركة أ'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField).at(1), '100');
+      await tester.pumpAndSettle();
+      final save = find.widgetWithText(FilledButton, 'حفظ');
+      await tester.scrollUntilVisible(
+        save,
+        180,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.tap(save.hitTestable());
+      await tester.pumpAndSettle();
+      final entry = (await db.readAll()).entries.single;
+      final owner = (entry['people'] as List).first as Record;
+      expect(owner['name'], 'أحمد');
+      expect(owner['code'], isNull);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+
   testWidgets('saves clients and colleagues by name in settings', (
     tester,
   ) async {
     final db = Store(NativeDatabase.memory());
     addTearDown(db.close);
-    await db.save('settings', {'language': 'ar'});
+    await db.save('settings', {'language': 'ar', 'name': 'Owner'});
     await db.save('team', {'name': 'فريق قديم', 'members': []});
     final container = ProviderContainer(
       overrides: [storeProvider.overrideWithValue(db)],
@@ -71,7 +141,10 @@ void main() {
   ) async {
     final db = Store(NativeDatabase.memory());
     addTearDown(db.close);
-    final id = await db.save('settings', {'language': 'system'});
+    final id = await db.save('settings', {
+      'language': 'system',
+      'name': 'Owner',
+    });
     tester.binding.platformDispatcher.localesTestValue = const [Locale('de')];
     addTearDown(tester.binding.platformDispatcher.clearLocalesTestValue);
     await db.save('client', {'name': 'شركة أ'});
@@ -93,7 +166,7 @@ void main() {
       TextDirection.ltr,
     );
     await tester.runAsync(
-      () => db.save('settings', {'language': 'ar'}, id: id),
+      () => db.save('settings', {'language': 'ar', 'name': 'Owner'}, id: id),
     );
     container.invalidate(recordsProvider);
     await tester.runAsync(() => container.read(recordsProvider.future));
@@ -172,7 +245,7 @@ void main() {
       );
       final db = Store(NativeDatabase.memory());
       addTearDown(db.close);
-      final id = await db.save('settings', {'language': 'en'});
+      final id = await db.save('settings', {'language': 'en', 'name': 'Owner'});
       final container = ProviderContainer(
         overrides: [storeProvider.overrideWithValue(db)],
       );
@@ -201,7 +274,11 @@ void main() {
       expect(target('History').left - target('Home').right, closeTo(4, 0.01));
 
       await tester.runAsync(
-        () => db.save('settings', {'language': 'ar', 'theme': 'dark'}, id: id),
+        () => db.save('settings', {
+          'language': 'ar',
+          'theme': 'dark',
+          'name': 'Owner',
+        }, id: id),
       );
       container.invalidate(recordsProvider);
       await tester.runAsync(() => container.read(recordsProvider.future));
@@ -279,7 +356,7 @@ void main() {
       (tester) async {
         final db = Store(NativeDatabase.memory());
         addTearDown(db.close);
-        await db.save('settings', {'language': locale});
+        await db.save('settings', {'language': locale, 'name': 'Owner'});
         final state = ProviderContainer(
           overrides: [storeProvider.overrideWithValue(db)],
         );

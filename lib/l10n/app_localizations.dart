@@ -344,6 +344,36 @@ abstract class AppLocalizations {
   /// **'Employee ID'**
   String get employeeId;
 
+  /// No description provided for @setupWelcome.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to Badalaty'**
+  String get setupWelcome;
+
+  /// No description provided for @setupIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your name to start logging allowances.'**
+  String get setupIntro;
+
+  /// No description provided for @setupName.
+  ///
+  /// In en, this message translates to:
+  /// **'Your name (required)'**
+  String get setupName;
+
+  /// No description provided for @setupStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Get started'**
+  String get setupStart;
+
+  /// No description provided for @setupEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'You can change your preferences in Settings.'**
+  String get setupEdit;
+
   /// No description provided for @employeeIdOptional.
   ///
   /// In en, this message translates to:

@@ -133,6 +133,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get employeeId => 'Employee ID';
 
   @override
+  String get setupWelcome => 'Welcome to Badalaty';
+
+  @override
+  String get setupIntro => 'Add your name to start logging allowances.';
+
+  @override
+  String get setupName => 'Your name (required)';
+
+  @override
+  String get setupStart => 'Get started';
+
+  @override
+  String get setupEdit => 'You can change your preferences in Settings.';
+
+  @override
   String get employeeIdOptional => 'Employee ID (optional)';
 
   @override
