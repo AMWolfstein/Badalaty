@@ -353,23 +353,46 @@ Widget field(
   String label, {
   bool number = false,
   ValueChanged<String>? onChanged,
-}) => Padding(
-  padding: const EdgeInsets.only(bottom: 10),
-  child: Semantics(
-    label: label,
-    child: liquid.GlassTextField(
-      controller: controller,
-      placeholder: label,
-      placeholderStyle: const TextStyle(fontSize: 14),
-      shape: const liquid.LiquidRoundedSuperellipse(borderRadius: 17),
-      surfaceStyle: liquid.GlassSurfaceStyle.solid,
-      minHeight: 50,
-      keyboardType: number
-          ? const TextInputType.numberWithOptions(decimal: true)
-          : TextInputType.text,
-      onChanged: onChanged,
-    ),
-  ),
+}) => Builder(
+  builder: (context) {
+    final theme = Theme.of(context);
+    return GlassContentCard(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 8, 14, 7),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ExcludeSemantics(
+              child: Text(
+                label,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                  height: 1.35,
+                ),
+              ),
+            ),
+            Semantics(
+              label: label,
+              child: liquid.GlassTextField(
+                controller: controller,
+                textStyle: theme.textTheme.bodyLarge?.copyWith(
+                  color: theme.colorScheme.onSurface,
+                ),
+                surfaceStyle: liquid.GlassSurfaceStyle.solid,
+                color: Colors.transparent,
+                padding: EdgeInsets.zero,
+                minHeight: 34,
+                keyboardType: number
+                    ? const TextInputType.numberWithOptions(decimal: true)
+                    : TextInputType.text,
+                onChanged: onChanged,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  },
 );
 
 int? whole(String input) {

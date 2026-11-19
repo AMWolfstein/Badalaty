@@ -63,7 +63,8 @@ class SettingsPage extends ConsumerWidget {
     final items = switch (_section) {
       _SettingsSection.directory => <Widget>[
         Wrap(
-          spacing: 8,
+          spacing: 10,
+          runSpacing: 8,
           children: [
             for (final (kind, label) in [
               ('client', l.clients),
@@ -225,7 +226,8 @@ class SettingsPage extends ConsumerWidget {
           leading: const GlassIcon(Icons.person_outline),
           title: Text(l.profile),
           subtitle: Text(settings['name'] as String? ?? l.none),
-          onTap: () => Navigator.of(context).push<void>(
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => Navigator.of(context, rootNavigator: true).push<void>(
             MaterialPageRoute(builder: (_) => _SettingsEditor(settings, false)),
           ),
         ),
@@ -252,7 +254,8 @@ class SettingsPage extends ConsumerWidget {
           leading: const GlassIcon(Icons.tune_outlined, tone: 1),
           title: Text(l.rates),
           subtitle: Text(l.rounding),
-          onTap: () => Navigator.of(context).push<void>(
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => Navigator.of(context, rootNavigator: true).push<void>(
             MaterialPageRoute(builder: (_) => _SettingsEditor(settings, true)),
           ),
         ),
@@ -271,7 +274,7 @@ class SettingsPage extends ConsumerWidget {
         ),
         if (Platform.isAndroid)
           GlassRow(
-            leading: const Icon(Icons.system_update_outlined),
+            leading: const GlassIcon(Icons.system_update_outlined),
             title: Text(l.appUpdates),
             onTap: () => showDialog<void>(
               context: context,
@@ -282,7 +285,7 @@ class SettingsPage extends ConsumerWidget {
       ],
     };
     return ListView(
-      padding: sectionListPadding(context),
+      padding: sectionListPadding(context, floatingTabs: _section == null),
       children: _settingsGroups(items).toList(),
     );
   }
@@ -314,7 +317,7 @@ class SettingsPage extends ConsumerWidget {
     trailing: const Icon(Icons.chevron_right),
     onTap: () {
       var kind = 'client';
-      Navigator.of(context).push<void>(
+      Navigator.of(context, rootNavigator: true).push<void>(
         MaterialPageRoute(
           builder: (_) => Consumer(
             builder: (context, ref, _) => StatefulBuilder(

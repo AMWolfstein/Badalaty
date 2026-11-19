@@ -27,21 +27,45 @@ Record platformSnapshot(List<Record> records, DateTime now) {
   final settings = records.settings;
   final dates = <String, Record>{};
   final weekday = settings['workweek'] as List? ?? [7, 1, 2, 3, 4];
+  final entriesByDay = <String, List<Record>>{};
+  final statusByDay = <String, Object?>{};
+  final activeTrips = <Record>[];
+  final clients = <Object?, Record>{};
+  for (final record in records) {
+    switch (record['kind']) {
+      case 'entry':
+        if (record['day'] case final String day) {
+          entriesByDay.putIfAbsent(day, () => []).add(record);
+        }
+      case 'day':
+        if (record['day'] case final String day) {
+          statusByDay.putIfAbsent(day, () => record['status']);
+        }
+      case 'assignment' when record['status'] == 'active':
+        activeTrips.add(record);
+      case 'client':
+        clients[record['id']] = record;
+    }
+  }
+  const excludedStatuses = {
+    ...recordedDayStatuses,
+    'holiday',
+    'noAllowance',
+    'weekend',
+  };
   for (var i = 0; i < 90; i++) {
     final date = DateTime(now.year, now.month, now.day + i);
     final key = dayKey(date);
-    final trip = records.activeOn(key);
-    final entries = records.entries.where((e) => e['day'] == key).toList();
-    final status = records
-        .ofKind('day')
-        .where((record) => record['day'] == key)
-        .firstOrNull?['status'];
-    final excluded = [
-      ...recordedDayStatuses,
-      'holiday',
-      'noAllowance',
-      'weekend',
-    ].contains(status);
+    final trip = activeTrips
+        .where(
+          (trip) =>
+              (trip['start'] as String).compareTo(key) <= 0 &&
+              (trip['end'] as String).compareTo(key) >= 0,
+        )
+        .firstOrNull;
+    final entries = entriesByDay[key] ?? const <Record>[];
+    final status = statusByDay[key];
+    final excluded = excludedStatuses.contains(status);
     final needsReminder =
         !excluded &&
         (trip == null
@@ -55,7 +79,7 @@ Record platformSnapshot(List<Record> records, DateTime now) {
       'amount': ownerTotal(entries),
       if (trip != null)
         'assignment':
-            '${records.byId(trip['client'])?['name'] ?? ''} · ${trip['name']}',
+            '${clients[trip['client']]?['name'] ?? ''} · ${trip['name']}',
       'count': entries.length + (recordedDayStatuses.contains(status) ? 1 : 0),
       if (needsReminder) 'reminder': trip == null ? 'general' : 'travel',
     };

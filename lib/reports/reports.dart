@@ -73,7 +73,7 @@ class _ReportsState extends State<ReportsPage> {
           ],
         ),
         Wrap(
-          spacing: 7,
+          spacing: 10,
           children: [
             Choice(
               l.client,

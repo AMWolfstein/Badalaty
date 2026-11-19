@@ -3,13 +3,19 @@ import 'package:material_ui/material_ui.dart';
 
 const glassTabBarSpace = 79.0;
 
-EdgeInsets sectionListPadding(BuildContext context) => EdgeInsets.fromLTRB(
-  16,
-  16,
-  16,
-  16 +
+const glassPageInset = 16.0;
+const glassItemGap = 12.0;
+
+EdgeInsets sectionListPadding(
+  BuildContext context, {
+  bool floatingTabs = true,
+}) => EdgeInsets.fromLTRB(
+  glassPageInset,
+  glassPageInset,
+  glassPageInset,
+  glassPageInset +
       MediaQuery.paddingOf(context).bottom +
-      (ModalRoute.of(context)?.canPop == true ? 0 : glassTabBarSpace),
+      (floatingTabs ? glassTabBarSpace : 0),
 );
 
 class GlassNavigationBar extends StatelessWidget {
@@ -37,6 +43,7 @@ class GlassNavigationBar extends StatelessWidget {
       spacing: 3,
       tabPadding: const EdgeInsets.symmetric(horizontal: 2),
       iconSize: 21,
+      enableBlend: theme.platform != TargetPlatform.android,
       selectedIconColor: theme.colorScheme.primary,
       selectedLabelColor: theme.colorScheme.primary,
       unselectedIconColor: theme.colorScheme.onSurface,

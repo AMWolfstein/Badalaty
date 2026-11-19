@@ -35,7 +35,11 @@ import 'widgets/platform.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await liquid.LiquidGlassWidgets.initialize();
+  await liquid.LiquidGlassWidgets.initialize(
+    warmUpMode: Platform.isAndroid
+        ? liquid.GlassWarmUpMode.never
+        : liquid.GlassWarmUpMode.auto,
+  );
   runApp(const ProviderScope(child: BadalatyApp()));
 }
 
@@ -52,6 +56,8 @@ class _AppState extends ConsumerState<BadalatyApp> with WidgetsBindingObserver {
   String? setupTheme;
   String? pendingWidgetRoute;
   bool? setupRequired;
+  bool widgetPublishScheduled = false;
+  final themes = <bool, (ThemeData, ThemeData)>{};
 
   bool needsSetup(List<Record> records) =>
       ((records.settings['name'] as String?) ?? '').trim().isEmpty;
@@ -225,8 +231,10 @@ class _AppState extends ConsumerState<BadalatyApp> with WidgetsBindingObserver {
   void didChangePlatformBrightness() => _publishWidgetsAfterFrame();
 
   void _publishWidgetsAfterFrame() {
-    if (!Platform.isAndroid) return;
+    if (!Platform.isAndroid || widgetPublishScheduled) return;
+    widgetPublishScheduled = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      widgetPublishScheduled = false;
       if (!mounted) return;
       final records = ref.read(recordsProvider).value;
       if (records != null) {
@@ -248,16 +256,31 @@ class _AppState extends ConsumerState<BadalatyApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    final records = ref.watch(recordsProvider).value;
-    final settings = records?.settings ?? {};
-    final inSetup = records != null && needsSetup(records);
-    final language = (inSetup ? setupLanguage : null) ?? settings['language'];
-    final theme = (inSetup ? setupTheme : null) ?? settings['theme'];
+    final (inSetup, storedLanguage, storedTheme) = ref.watch(
+      recordsProvider.select((data) {
+        final records = data.value;
+        final settings = records?.settings;
+        return (
+          records != null && needsSetup(records),
+          settings?['language'],
+          settings?['theme'],
+        );
+      }),
+    );
+    final language = (inSetup ? setupLanguage : null) ?? storedLanguage;
+    final theme = (inSetup ? setupTheme : null) ?? storedTheme;
     final arabic =
         language == 'ar' ||
         ((language == null || language == 'system') &&
             WidgetsBinding.instance.platformDispatcher.locale.languageCode ==
                 'ar');
+    final (lightTheme, darkTheme) = themes.putIfAbsent(
+      arabic,
+      () => (
+        badalatyTheme(Brightness.light, arabic: arabic),
+        badalatyTheme(Brightness.dark, arabic: arabic),
+      ),
+    );
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       routerConfig: router,
@@ -275,6 +298,11 @@ class _AppState extends ConsumerState<BadalatyApp> with WidgetsBindingObserver {
             brightnessResolver: Theme.maybeBrightnessOf,
             theme: const liquid.GlassThemeData.ios26(),
             adaptiveQuality: true,
+            adaptiveConfig: Platform.isAndroid
+                ? const liquid.GlassAdaptiveScopeConfig(
+                    maxQuality: liquid.GlassQuality.standard,
+                  )
+                : null,
             respectSystemAccessibility: true,
             child: child!,
           ),
@@ -293,8 +321,8 @@ class _AppState extends ConsumerState<BadalatyApp> with WidgetsBindingObserver {
       locale: language == 'ar' || language == 'en'
           ? Locale(language as String)
           : null,
-      theme: badalatyTheme(Brightness.light, arabic: arabic),
-      darkTheme: badalatyTheme(Brightness.dark, arabic: arabic),
+      theme: lightTheme,
+      darkTheme: darkTheme,
       themeMode: switch (theme) {
         'light' => ThemeMode.light,
         'dark' => ThemeMode.dark,
