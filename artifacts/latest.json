@@ -1,10 +1,10 @@
 {
   "package": "com.amwolfstein.badalaty",
-  "version": "1.0.13",
-  "build": 14,
-  "sha256": "54e716939c50998db9390f5e5ddb3c18e8a3689a45ae5fd103435bca1863fa3c",
+  "version": "1.0.14",
+  "build": 15,
+  "sha256": "6ce7e14b3092413ec6c9f587dc5fc1711bd3f7717bce31f79ac32b5150b9a036",
   "notes": {
-    "ar": "تحسين توزيع فلاتر السجلات ومسافات البحث ووضوحه في المظهر الداكن.",
-    "en": "Improve history filter wrapping, search spacing, and dark-mode contrast."
+    "ar": "إصلاح تراكب الصفحات والحواف السوداء عند الفتح والرجوع على أندرويد.",
+    "en": "Fix overlapping pages and black edges during Android navigation."
   }
 }
