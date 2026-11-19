@@ -35,11 +35,7 @@ import 'widgets/platform.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await liquid.LiquidGlassWidgets.initialize(
-    warmUpMode: Platform.isAndroid
-        ? liquid.GlassWarmUpMode.never
-        : liquid.GlassWarmUpMode.auto,
-  );
+  await liquid.LiquidGlassWidgets.initialize();
   runApp(const ProviderScope(child: BadalatyApp()));
 }
 
@@ -49,6 +45,12 @@ class BadalatyApp extends ConsumerStatefulWidget {
   ConsumerState<BadalatyApp> createState() => _AppState();
 }
 
+const _ios27Glass = liquid.GlassThemeData.ios27();
+final _premiumGlass = _ios27Glass.copyWith(
+  light: _ios27Glass.light.copyWith(quality: liquid.GlassQuality.premium),
+  dark: _ios27Glass.dark.copyWith(quality: liquid.GlassQuality.premium),
+);
+
 const _sections = ['/', '/history', '/assignments', '/reports', '/settings'];
 
 class _AppState extends ConsumerState<BadalatyApp> with WidgetsBindingObserver {
@@ -56,6 +58,7 @@ class _AppState extends ConsumerState<BadalatyApp> with WidgetsBindingObserver {
   String? setupTheme;
   String? pendingWidgetRoute;
   bool? setupRequired;
+  final glassNavigationKey = GlobalKey();
   bool widgetPublishScheduled = false;
   final themes = <bool, (ThemeData, ThemeData)>{};
 
@@ -256,7 +259,7 @@ class _AppState extends ConsumerState<BadalatyApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    final (inSetup, storedLanguage, storedTheme) = ref.watch(
+    final (inSetup, storedLanguage, storedTheme, autoReduceGlass) = ref.watch(
       recordsProvider.select((data) {
         final records = data.value;
         final settings = records?.settings;
@@ -264,6 +267,7 @@ class _AppState extends ConsumerState<BadalatyApp> with WidgetsBindingObserver {
           records != null && needsSetup(records),
           settings?['language'],
           settings?['theme'],
+          settings?['autoReduceGlass'] != false,
         );
       }),
     );
@@ -296,15 +300,14 @@ class _AppState extends ConsumerState<BadalatyApp> with WidgetsBindingObserver {
           ),
           child: liquid.LiquidGlassWidgets.wrap(
             brightnessResolver: Theme.maybeBrightnessOf,
-            theme: const liquid.GlassThemeData.ios26(),
-            adaptiveQuality: true,
-            adaptiveConfig: Platform.isAndroid
-                ? const liquid.GlassAdaptiveScopeConfig(
-                    maxQuality: liquid.GlassQuality.standard,
-                  )
-                : null,
+            theme: _premiumGlass,
+            adaptiveQuality: autoReduceGlass,
+            adaptiveConfig: const liquid.GlassAdaptiveScopeConfig(
+              maxQuality: liquid.GlassQuality.premium,
+              frostStep: true,
+            ),
             respectSystemAccessibility: true,
-            child: child!,
+            child: KeyedSubtree(key: glassNavigationKey, child: child!),
           ),
         );
       },

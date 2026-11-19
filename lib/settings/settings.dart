@@ -242,6 +242,14 @@ class SettingsPage extends ConsumerWidget {
           'light': l.light,
           'dark': l.dark,
         }, (value) => update(context, ref, {'theme': value})),
+        GlassToggleRow(
+          secondary: const GlassIcon(Icons.auto_awesome_outlined),
+          label: l.autoReduceGlass,
+          subtitle: Text(l.autoReduceGlassDescription),
+          value: settings['autoReduceGlass'] != false,
+          onChanged: (value) =>
+              update(context, ref, {'autoReduceGlass': value}),
+        ),
         _sectionTile(
           context,
           _SettingsSection.reminders,
