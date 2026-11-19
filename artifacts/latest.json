@@ -1,10 +1,10 @@
 {
   "package": "com.amwolfstein.badalaty",
-  "version": "1.0.16",
-  "build": 17,
-  "sha256": "feea5e1be2b8e4d1464a878ad14d41a5721a9a626f49a9ed0089f1ef49412469",
+  "version": "1.0.17",
+  "build": 18,
+  "sha256": "bf7607783fe1c9bba33d05a90aba28be7e59202ec464731c10427d76b4004778",
   "notes": {
-    "ar": "مفتاح مباشر للتبديل بين Premium وStandard لجودة الزجاج.",
-    "en": "Choose Premium or Standard Liquid Glass directly from Settings."
+    "ar": "تحسين شكل حقول التاريخ وإظهار تاريخ البداية والنهاية في التقارير.",
+    "en": "Improve the layout and labels of report date fields."
   }
 }
