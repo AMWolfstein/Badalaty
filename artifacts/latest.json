@@ -1,10 +1,10 @@
 {
   "package": "com.amwolfstein.badalaty",
-  "version": "1.0.12",
-  "build": 13,
-  "sha256": "fcd73df2e109e90515ce386b697d447e6698e4a3279bbe7ae208388668094c52",
+  "version": "1.0.13",
+  "build": 14,
+  "sha256": "54e716939c50998db9390f5e5ddb3c18e8a3689a45ae5fd103435bca1863fa3c",
   "notes": {
-    "ar": "إصلاح زر الحفظ في الإعدادات، وتحسين المظهر الداكن والمسافات، وتخفيف تكلفة العرض على أندرويد.",
-    "en": "Fix settings save layout, improve dark styling and spacing, and reduce rendering work on Android."
+    "ar": "تحسين توزيع فلاتر السجلات ومسافات البحث ووضوحه في المظهر الداكن.",
+    "en": "Improve history filter wrapping, search spacing, and dark-mode contrast."
   }
 }
