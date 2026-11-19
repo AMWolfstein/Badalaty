@@ -65,6 +65,12 @@ ThemeData badalatyTheme(Brightness brightness, {required bool arabic}) {
     ),
     colorScheme: scheme,
     scaffoldBackgroundColor: scheme.surface,
+    pageTransitionsTheme: PageTransitionsTheme(
+      builders: {
+        ...const PageTransitionsTheme().builders,
+        TargetPlatform.android: const _AndroidSlideTransitions(),
+      },
+    ),
     appBarTheme: AppBarThemeData(
       systemOverlayStyle: dark
           ? SystemUiOverlayStyle.light
@@ -155,6 +161,41 @@ ThemeData badalatyTheme(Brightness brightness, {required bool arabic}) {
       ),
     ),
   );
+}
+
+// Keep each page opaque while moving it so glass surfaces on adjacent
+// routes are not composited over one another during push or pop.
+class _AndroidSlideTransitions extends PageTransitionsBuilder {
+  const _AndroidSlideTransitions();
+
+  @override
+  Duration get transitionDuration => const Duration(milliseconds: 240);
+
+  @override
+  Duration get reverseTransitionDuration => const Duration(milliseconds: 200);
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    if (MediaQuery.disableAnimationsOf(context)) {
+      return child;
+    }
+    return SlideTransition(
+      textDirection: Directionality.of(context),
+      position: animation.drive(
+        Tween<Offset>(
+          begin: const Offset(.22, 0),
+          end: Offset.zero,
+        ).chain(CurveTween(curve: Curves.easeOutCubic)),
+      ),
+      child: child,
+    );
+  }
 }
 
 class GlassScaffold extends StatelessWidget {
