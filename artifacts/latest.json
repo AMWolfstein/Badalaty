@@ -1,10 +1,10 @@
 {
   "package": "com.amwolfstein.badalaty",
-  "version": "1.0.14",
-  "build": 15,
-  "sha256": "6ce7e14b3092413ec6c9f587dc5fc1711bd3f7717bce31f79ac32b5150b9a036",
+  "version": "1.0.15",
+  "build": 16,
+  "sha256": "10a03397d0647688ce75f54adcf0aa407e834b2100d5f243817d2aed9b181f14",
   "notes": {
-    "ar": "إصلاح تراكب الصفحات والحواف السوداء عند الفتح والرجوع على أندرويد.",
-    "en": "Fix overlapping pages and black edges during Android navigation."
+    "ar": "نمط iOS 27 وجودة Premium مع مفتاح للتخفيض التلقائي لجودة الزجاج.",
+    "en": "iOS 27 Premium Liquid Glass with an automatic quality reduction switch."
   }
 }
