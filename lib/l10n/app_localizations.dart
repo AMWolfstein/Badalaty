@@ -560,6 +560,12 @@ abstract class AppLocalizations {
   /// **'Search'**
   String get search;
 
+  /// No description provided for @historyFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter records'**
+  String get historyFilters;
+
   /// No description provided for @all.
   ///
   /// In en, this message translates to:
