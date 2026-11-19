@@ -1,10 +1,10 @@
 {
   "package": "com.amwolfstein.badalaty",
-  "version": "1.0.10",
-  "build": 11,
-  "sha256": "5467fcd9001aeddd5c0fdcc0d6b778f6551b870ef5867cce8f37fd106bee7220",
+  "version": "1.0.11",
+  "build": 12,
+  "sha256": "531b3717dd26bce7245d649a0edf3bb1c565d67d25e2ab2df9f6860b68dfb537",
   "notes": {
-    "ar": "شاشة إعداد جديدة، والرقم الوظيفي اختياري، وخلفية الويدجت تتبع مظهر التطبيق.",
-    "en": "First-run setup, optional employee ID, and widget backgrounds that follow the app theme."
+    "ar": "تصميم Liquid Glass مع بار تنقّل وقوائم منسدلة ومفاتيح تشغيل زجاجية.",
+    "en": "Liquid Glass redesign with a floating tab bar, menus, and animated switches."
   }
 }
