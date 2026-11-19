@@ -69,23 +69,23 @@ class SettingsPage extends ConsumerWidget {
               ('client', l.clients),
               ('employee', l.colleagues),
             ])
-              ChoiceChip(
-                label: Text(label),
+              GlassFilterChip(
+                label: label,
                 selected: _directoryKind == kind,
-                onSelected: (_) => _onDirectoryKind?.call(kind),
+                onTap: () => _onDirectoryKind?.call(kind),
               ),
           ],
         ),
         GlassHeading(
           _directoryKind == 'client' ? l.clients : l.colleagues,
-          action: FilledButton.icon(
+          action: GlassAction.icon(
             icon: const Icon(Icons.add, size: 16),
             label: Text(l.add),
             onPressed: () => editDirectory(context, _directoryKind),
           ),
         ),
         for (final record in records.ofKind(_directoryKind))
-          ListTile(
+          GlassRow(
             leading: GlassIcon(
               _directoryKind == 'client'
                   ? Icons.business_outlined
@@ -105,7 +105,7 @@ class SettingsPage extends ConsumerWidget {
                 : null,
             onTap: () =>
                 editDirectory(context, _directoryKind, previous: record),
-            trailing: IconButton(
+            trailing: GlassIconAction(
               tooltip: record['archived'] == true ? l.unarchive : l.archive,
               icon: Icon(
                 record['archived'] == true
@@ -126,9 +126,9 @@ class SettingsPage extends ConsumerWidget {
           ),
       ],
       _SettingsSection.reminders => <Widget>[
-        SwitchListTile(
+        GlassToggleRow(
           secondary: const GlassIcon(Icons.notifications_outlined),
-          title: Text(l.reminders),
+          label: l.reminders,
           value: settings['reminders'] == true,
           onChanged: (value) async {
             if (value) await requestReminderPermission();
@@ -137,14 +137,22 @@ class SettingsPage extends ConsumerWidget {
             }
           },
         ),
-        ListTile(
+        GlassRow(
           leading: const GlassIcon(Icons.schedule_outlined),
           title: Text(l.reminderTime),
           subtitle: Text(time.format(context)),
           onTap: () async {
-            final chosen = await showTimePicker(
-              context: context,
-              initialTime: time,
+            final today = DateTime.now();
+            final chosen = await glassDateTimePicker(
+              context,
+              initial: DateTime(
+                today.year,
+                today.month,
+                today.day,
+                time.hour,
+                time.minute,
+              ),
+              timeOnly: true,
             );
             if (chosen != null && context.mounted) {
               await update(context, ref, {
@@ -156,12 +164,10 @@ class SettingsPage extends ConsumerWidget {
         ),
         GlassHeading(l.workweek),
         for (final day in [6, 7, 1, 2, 3, 4, 5])
-          SwitchListTile(
+          GlassToggleRow(
             secondary: const GlassIcon(Icons.calendar_today_outlined),
-            title: Text(
-              DateFormat.EEEE(l.localeName)
-                  .format(DateTime(2026, 1, 5 + day - 1)),
-            ),
+            label: DateFormat.EEEE(l.localeName)
+                .format(DateTime(2026, 1, 5 + day - 1)),
             value: workweek.contains(day),
             onChanged: (value) {
               final next = {...workweek};
@@ -171,7 +177,7 @@ class SettingsPage extends ConsumerWidget {
           ),
       ],
       _SettingsSection.backups => <Widget>[
-        ListTile(
+        GlassRow(
           title: Text(l.backup),
           leading: const Icon(Icons.download),
           onTap: () async {
@@ -189,7 +195,7 @@ class SettingsPage extends ConsumerWidget {
             }
           },
         ),
-        ListTile(
+        GlassRow(
           title: Text(l.restore),
           leading: const Icon(Icons.restore),
           onTap: () async {
@@ -215,7 +221,7 @@ class SettingsPage extends ConsumerWidget {
         ),
       ],
       null => <Widget>[
-        ListTile(
+        GlassRow(
           leading: const GlassIcon(Icons.person_outline),
           title: Text(l.profile),
           subtitle: Text(settings['name'] as String? ?? l.none),
@@ -242,7 +248,7 @@ class SettingsPage extends ConsumerWidget {
           subtitle: time.format(context),
         ),
         GlassHeading(l.allowanceSettingsSection),
-        ListTile(
+        GlassRow(
           leading: const GlassIcon(Icons.tune_outlined, tone: 1),
           title: Text(l.rates),
           subtitle: Text(l.rounding),
@@ -264,7 +270,7 @@ class SettingsPage extends ConsumerWidget {
           Icons.cloud_download_outlined,
         ),
         if (Platform.isAndroid)
-          ListTile(
+          GlassRow(
             leading: const Icon(Icons.system_update_outlined),
             title: Text(l.appUpdates),
             onTap: () => showDialog<void>(
@@ -277,16 +283,22 @@ class SettingsPage extends ConsumerWidget {
     };
     return ListView(
       padding: sectionListPadding(context),
-      children: [
-        for (final item in items)
-          if (item is ListTile ||
-              item is ExpansionTile ||
-              item is SwitchListTile)
-            Card(child: item)
-          else
-            item,
-      ],
+      children: _settingsGroups(items).toList(),
     );
+  }
+
+  Iterable<Widget> _settingsGroups(List<Widget> items) sync* {
+    var group = <Widget>[];
+    for (final item in items) {
+      if (item is GlassRow || item is GlassToggleRow) {
+        group.add(item);
+      } else {
+        if (group.isNotEmpty) yield GlassContentGroup(children: group);
+        group = [];
+        yield item;
+      }
+    }
+    if (group.isNotEmpty) yield GlassContentGroup(children: group);
   }
 
   Widget _sectionTile(
@@ -295,7 +307,7 @@ class SettingsPage extends ConsumerWidget {
     String title,
     IconData icon, {
     String? subtitle,
-  }) => ListTile(
+  }) => GlassRow(
     leading: GlassIcon(icon),
     title: Text(title),
     subtitle: subtitle == null ? null : Text(subtitle),
@@ -307,7 +319,7 @@ class SettingsPage extends ConsumerWidget {
           builder: (_) => Consumer(
             builder: (context, ref, _) => StatefulBuilder(
               builder: (context, setState) => GlassScaffold(
-                appBar: AppBar(title: Text(title)),
+                appBar: GlassHeader(title: Text(title)),
                 body: SafeArea(
                   top: false,
                   child: SettingsPage._group(
@@ -416,7 +428,7 @@ class _SettingsEditorState extends ConsumerState<_SettingsEditor> {
   Widget build(BuildContext context) {
     final l = context.l;
     return GlassScaffold(
-      appBar: AppBar(title: Text(widget.rates ? l.rates : l.profile)),
+      appBar: GlassHeader(title: Text(widget.rates ? l.rates : l.profile)),
       body: SafeArea(
         top: false,
         child: Column(
@@ -428,8 +440,8 @@ class _SettingsEditorState extends ConsumerState<_SettingsEditor> {
                   if (widget.rates)
                     GlassHeading(l.travel)
                   else
-                    Card(
-                      child: ListTile(
+                    GlassContentCard(
+                      child: GlassRow(
                         leading: const GlassIcon(Icons.person_outline),
                         title: Text(
                           widget.settings['name'] as String? ?? l.profile,
@@ -458,7 +470,7 @@ class _SettingsEditorState extends ConsumerState<_SettingsEditor> {
               padding: const EdgeInsets.fromLTRB(16, 6, 16, 12),
               child: SizedBox(
                 width: double.infinity,
-                child: FilledButton(
+                child: GlassAction(
                   onPressed: busy ? null : save,
                   child: Text(l.save),
                 ),

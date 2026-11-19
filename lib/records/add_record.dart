@@ -16,7 +16,7 @@ class AddRecordPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = context.l;
     return GlassScaffold(
-      appBar: AppBar(title: Text(l.addEntry)),
+      appBar: GlassHeader(title: Text(l.addEntry)),
       body: SafeArea(
         top: false,
         child: ListView(
@@ -24,8 +24,8 @@ class AddRecordPage extends StatelessWidget {
           children: [
             GlassHeading(l.recordType),
             for (final status in recordedDayStatuses)
-              Card(
-                child: ListTile(
+              GlassContentCard(
+                child: GlassRow(
                   leading: _DayIcon(status),
                   title: Text(l.statusName(status)),
                   subtitle: Text(
@@ -35,8 +35,8 @@ class AddRecordPage extends StatelessWidget {
                   onTap: () => context.push('/record/$status'),
                 ),
               ),
-            Card(
-              child: ListTile(
+            GlassContentCard(
+              child: GlassRow(
                 leading: const GlassIcon(Icons.account_balance_wallet_outlined),
                 title: Text(l.allowanceOption),
                 subtitle: Text(l.allowanceOptionDescription),
@@ -81,7 +81,7 @@ class _DayRecordPageState extends ConsumerState<DayRecordPage> {
   Widget build(BuildContext context) {
     final l = context.l;
     return GlassScaffold(
-      appBar: AppBar(
+      appBar: GlassHeader(
         title: Text(widget.status == 'leave' ? l.recordLeave : l.recordOffice),
       ),
       body: SafeArea(
@@ -92,8 +92,8 @@ class _DayRecordPageState extends ConsumerState<DayRecordPage> {
               child: ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
-                  Card(
-                    child: ListTile(
+                  GlassContentCard(
+                    child: GlassRow(
                       leading: _DayIcon(widget.status),
                       title: Text(l.statusName(widget.status)),
                       subtitle: Text(
@@ -104,9 +104,9 @@ class _DayRecordPageState extends ConsumerState<DayRecordPage> {
                     ),
                   ),
                   DayField(l.date, day, (value) => setState(() => day = value)),
-                  Card(
+                  GlassContentCard(
                     color: Theme.of(context).colorScheme.primaryContainer,
-                    child: ListTile(
+                    child: GlassRow(
                       title: Text(l.recordValue),
                       trailing: Text(context.money(0)),
                     ),
@@ -118,7 +118,7 @@ class _DayRecordPageState extends ConsumerState<DayRecordPage> {
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 10),
               child: SizedBox(
                 width: double.infinity,
-                child: FilledButton.icon(
+                child: GlassAction.icon(
                   onPressed: saving ? null : save,
                   icon: const Icon(Icons.check),
                   label: Text(l.saveRecordLabel),
@@ -140,8 +140,8 @@ class DayRecordTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final status = record['status'] as String;
-    return Card(
-      child: ListTile(
+    return GlassContentCard(
+      child: GlassRow(
         leading: _DayIcon(status),
         title: Text(context.l.statusName(status)),
         subtitle: Text(dateLabel(context, record['day'] as String)),

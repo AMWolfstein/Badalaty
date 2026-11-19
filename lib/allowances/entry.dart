@@ -184,7 +184,7 @@ class _EntryState extends ConsumerState<EntryPage> {
     final l = context.l;
     final data = ref.watch(recordsProvider);
     return GlassScaffold(
-      appBar: AppBar(title: Text(l.categoryName(widget.category.name))),
+      appBar: GlassHeader(title: Text(l.categoryName(widget.category.name))),
       body: data.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (_, _) => Center(child: Text(l.error)),
@@ -265,7 +265,7 @@ class _EntryState extends ConsumerState<EntryPage> {
                                       }),
                                     ),
                                   ),
-                                  IconButton(
+                                  GlassIconAction(
                                     tooltip: l.addClient,
                                     icon: const Icon(Icons.person_add_alt),
                                     onPressed: () async {
@@ -308,40 +308,41 @@ class _EntryState extends ConsumerState<EntryPage> {
                           onChanged: (_) => change(() {}),
                         ),
                         if (isTravel) ...[
-                          Card(
-                            child: SwitchListTile(
-                              secondary: const GlassIcon(
-                                Icons.restaurant_outlined,
+                          GlassContentGroup(
+                            children: [
+                              GlassToggleRow(
+                                secondary: const GlassIcon(
+                                  Icons.restaurant_outlined,
+                                ),
+                                label: l.meals,
+                                subtitle: Text(context.money(mealRate)),
+                                value: meals,
+                                onChanged: (value) =>
+                                    change(() => meals = value),
                               ),
-                              title: Text(l.meals),
-                              subtitle: Text(context.money(mealRate)),
-                              value: meals,
-                              onChanged: (value) => change(() => meals = value),
-                            ),
-                          ),
-                          Card(
-                            child: SwitchListTile(
-                              secondary: const GlassIcon(
-                                Icons.hotel_outlined,
-                                tone: 1,
-                              ),
-                              title: Text(l.lodging),
-                              subtitle: Text(
-                                context.money(
-                                  accommodationAllowance(
-                                    lodgingRate,
-                                    basisPoints,
+                              GlassToggleRow(
+                                secondary: const GlassIcon(
+                                  Icons.hotel_outlined,
+                                  tone: 1,
+                                ),
+                                label: l.lodging,
+                                subtitle: Text(
+                                  context.money(
+                                    accommodationAllowance(
+                                      lodgingRate,
+                                      basisPoints,
+                                    ),
                                   ),
                                 ),
+                                value: lodging,
+                                onChanged: (value) =>
+                                    change(() => lodging = value),
                               ),
-                              value: lodging,
-                              onChanged: (value) =>
-                                  change(() => lodging = value),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: Text(l.rounding),
+                              Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: Text(l.rounding),
+                              ),
+                            ],
                           ),
                         ] else
                           field(
@@ -363,7 +364,7 @@ class _EntryState extends ConsumerState<EntryPage> {
                                       change(() => participants = value),
                                 ),
                               ),
-                              IconButton(
+                              GlassIconAction(
                                 tooltip: l.addColleague,
                                 icon: const Icon(Icons.person_add_alt),
                                 onPressed: () async {
@@ -379,7 +380,7 @@ class _EntryState extends ConsumerState<EntryPage> {
                             ],
                           ),
                           if (split != null)
-                            ListTile(
+                            GlassRow(
                               title: Text(l.total),
                               trailing: Text(context.money(split.total)),
                               subtitle: Text(
@@ -396,9 +397,9 @@ class _EntryState extends ConsumerState<EntryPage> {
                           }, (value) => change(() => provider = value)),
                         const SizedBox(height: 12),
                         field(notes, l.notes, onChanged: (_) => change(() {})),
-                        Card(
+                        GlassContentCard(
                           color: Theme.of(context).colorScheme.primaryContainer,
-                          child: ListTile(
+                          child: GlassRow(
                             leading: const GlassIcon(
                               Icons.account_balance_wallet_outlined,
                             ),
@@ -424,12 +425,12 @@ class _EntryState extends ConsumerState<EntryPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        FilledButton(
+                        GlassAction(
                           onPressed: busy ? null : () => save(records, false),
                           child: Text(l.save),
                         ),
                         if (widget.id == null)
-                          OutlinedButton(
+                          GlassSecondaryAction(
                             onPressed: busy ? null : () => save(records, true),
                             child: Text(l.saveMore),
                           ),

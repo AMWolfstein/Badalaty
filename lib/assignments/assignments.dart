@@ -40,10 +40,10 @@ class _AssignmentsPageState extends State<AssignmentsPage> {
               for (final status in [null, ...tripStatuses])
                 Padding(
                   padding: const EdgeInsetsDirectional.only(end: 10),
-                  child: ChoiceChip(
-                    label: Text(status == null ? l.all : l.statusName(status)),
+                  child: GlassFilterChip(
+                    label: status == null ? l.all : l.statusName(status),
                     selected: status == filter,
-                    onSelected: (_) => setState(() => filter = status),
+                    onTap: () => setState(() => filter = status),
                   ),
                 ),
             ],
@@ -74,8 +74,8 @@ class _AssignmentsPageState extends State<AssignmentsPage> {
                   ),
                 )
               else
-                Card(
-                  child: ListTile(
+                GlassContentCard(
+                  child: GlassRow(
                     leading: GlassIcon(
                       status == 'active'
                           ? Icons.place_outlined
@@ -90,7 +90,7 @@ class _AssignmentsPageState extends State<AssignmentsPage> {
                   ),
                 ),
           ],
-        FilledButton.icon(
+        GlassAction.icon(
           onPressed: () => context.push('/assignment/new'),
           icon: const Icon(Icons.add),
           label: Text(l.newAssignmentTitle),
@@ -179,14 +179,15 @@ class _AssignmentEditorState extends ConsumerState<AssignmentEditor> {
   Widget build(BuildContext context) {
     final l = context.l;
     return GlassScaffold(
-      appBar: AppBar(
+      appBar: GlassHeader(
         title: Text(
           widget.id == null ? l.newAssignmentTitle : l.tripDetailsTitle,
         ),
         actions: [
           if (!editing)
-            IconButton(
+            GlassIconAction(
               tooltip: l.edit,
+              floating: true,
               icon: const Icon(Icons.edit_outlined),
               onPressed: () => setState(() => editing = true),
             ),
@@ -249,8 +250,8 @@ class _AssignmentEditorState extends ConsumerState<AssignmentEditor> {
                     if (index > 0) {
                       final day = days[index - 1];
                       final recorded = tripEntries.contains(day);
-                      return Card(
-                        child: ListTile(
+                      return GlassContentCard(
+                        child: GlassRow(
                           leading: GlassIcon(
                             recorded
                                 ? Icons.check_circle_outline
@@ -267,7 +268,7 @@ class _AssignmentEditorState extends ConsumerState<AssignmentEditor> {
                           ),
                           trailing: recorded
                               ? null
-                              : IconButton(
+                              : GlassIconAction(
                                   tooltip: l.travel,
                                   icon: const Icon(Icons.add),
                                   onPressed: dirty || status == 'cancelled'
@@ -295,15 +296,15 @@ class _AssignmentEditorState extends ConsumerState<AssignmentEditor> {
                           ),
                           if (notes.text.trim().isNotEmpty) ...[
                             GlassHeading(l.notes),
-                            Card(
-                              child: ListTile(
+                            GlassContentCard(
+                              child: GlassRow(
                                 leading: const GlassIcon(Icons.notes_outlined),
                                 title: Text(notes.text),
                               ),
                             ),
                           ],
                           if (status == 'active')
-                            OutlinedButton(
+                            GlassSecondaryAction(
                               onPressed: busy
                                   ? null
                                   : () => save(records, newStatus: 'completed'),
@@ -362,12 +363,12 @@ class _AssignmentEditorState extends ConsumerState<AssignmentEditor> {
                         }, (value) => edit(() => status = value)),
                         const SizedBox(height: 12),
                         field(notes, l.notes, onChanged: (_) => edit(() {})),
-                        FilledButton(
+                        GlassAction(
                           onPressed: busy ? null : () => save(records),
                           child: Text(l.save),
                         ),
                         if (trip != null && status == 'active')
-                          OutlinedButton(
+                          GlassSecondaryAction(
                             onPressed: busy
                                 ? null
                                 : () => save(records, newStatus: 'completed'),

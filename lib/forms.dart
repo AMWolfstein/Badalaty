@@ -1,32 +1,78 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart' as liquid;
 import 'package:intl/intl.dart';
 
 import 'allowances/calculation.dart';
 import 'data/store.dart';
 import 'l10n/labels.dart';
+import 'widgets/glass_design.dart';
 
 Future<bool> confirm(BuildContext context, String message) async =>
-    await showDialog<bool>(
+    await liquid.GlassDialog.show<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(context.l.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(context.l.confirm),
-          ),
-        ],
-      ),
+      message: message,
+      actions: [
+        liquid.GlassDialogAction(
+          label: context.l.cancel,
+          onPressed: () =>
+              Navigator.of(context, rootNavigator: true).pop(false),
+        ),
+        liquid.GlassDialogAction(
+          label: context.l.confirm,
+          onPressed: () => Navigator.of(context, rootNavigator: true).pop(true),
+        ),
+      ],
     ) ??
     false;
 
-void feedback(BuildContext context, String message) =>
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+void feedback(BuildContext context, String message) => liquid.GlassToast.show(
+  context,
+  message: message,
+  type: liquid.GlassToastType.neutral,
+);
+
+Future<DateTime?> glassDateTimePicker(
+  BuildContext context, {
+  required DateTime initial,
+  bool timeOnly = false,
+}) {
+  var selected = initial;
+  final labels = context.l;
+  final material = MaterialLocalizations.of(context);
+  return liquid.GlassDialog.show<DateTime>(
+    context: context,
+    title: timeOnly ? labels.reminderTime : labels.date,
+    maxWidth: 410,
+    content: liquid.GlassDatePicker.wheel(
+      initialDateTime: initial,
+      mode: timeOnly
+          ? liquid.GlassDatePickerMode.time
+          : liquid.GlassDatePickerMode.date,
+      minimumDate: timeOnly ? null : DateTime(1900),
+      maximumDate: timeOnly ? null : DateTime(2200),
+      use24hFormat: MediaQuery.alwaysUse24HourFormatOf(context),
+      monthNames: List.generate(
+        12,
+        (index) =>
+            DateFormat.MMMM(labels.localeName)
+                .format(DateTime(2000, index + 1)),
+      ),
+      surfaceStyle: liquid.GlassSurfaceStyle.solid,
+      onDateTimeChanged: (value) => selected = value,
+    ),
+    actions: [
+      liquid.GlassDialogAction(
+        label: labels.cancel,
+        onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+      ),
+      liquid.GlassDialogAction(
+        label: material.okButtonLabel,
+        onPressed: () =>
+            Navigator.of(context, rootNavigator: true).pop(selected),
+      ),
+    ],
+  );
+}
 
 String dateLabel(BuildContext context, String day) =>
     DateFormat.yMMMd(context.l.localeName).format(DateTime.parse(day));
@@ -45,24 +91,25 @@ class DayField extends StatelessWidget {
   final ValueChanged<String> onChange;
 
   @override
-  Widget build(BuildContext context) => Card(
-    child: InkWell(
-      onTap: () async {
-        final result = await showDatePicker(
-          context: context,
-          initialDate: DateTime.parse(day),
-          firstDate: DateTime(1900),
-          lastDate: DateTime(2200),
-        );
-        if (result != null) onChange(dayKey(result));
-      },
-      child: _FieldContent(
-        label: label,
-        value: shortDate
-            ? DateFormat.MMMd(context.l.localeName).format(DateTime.parse(day))
-            : dateLabel(context, day),
-        icon: Icons.calendar_today_outlined,
+  Widget build(BuildContext context) => GlassContentCard(
+    child: liquid.GlassPicker(
+      value: shortDate
+          ? DateFormat.MMMd(context.l.localeName).format(DateTime.parse(day))
+          : dateLabel(context, day),
+      semanticLabel: label,
+      surfaceStyle: liquid.GlassSurfaceStyle.solid,
+      icon: Icon(
+        Icons.calendar_today_outlined,
+        size: 17,
+        color: Theme.of(context).colorScheme.primary,
       ),
+      onTap: () async {
+        final result = await glassDateTimePicker(
+          context,
+          initial: DateTime.parse(day),
+        );
+        if (result != null && context.mounted) onChange(dayKey(result));
+      },
     ),
   );
 }
@@ -87,48 +134,58 @@ class Choice<T> extends StatelessWidget {
     final selected = items.containsKey(value) ? value : items.keys.firstOrNull;
     final text = items[selected] ?? label;
     final scheme = Theme.of(context).colorScheme;
-    return Card(
+    final trigger = GlassContentCard(
       color: compact ? scheme.primaryContainer : null,
-      elevation: compact ? 0 : null,
-      shape: compact
-          ? StadiumBorder(side: BorderSide(color: scheme.outlineVariant))
-          : null,
-      child: PopupMenuButton<T>(
-        tooltip: label,
-        enabled: items.isNotEmpty,
-        initialValue: selected,
-        itemBuilder: (_) => [
-          for (final item in items.entries)
-            PopupMenuItem<T>(value: item.key, child: Text(item.value)),
-        ],
-        onSelected: onChange,
-        child: compact
-            ? Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 7,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  spacing: 4,
-                  children: [
-                    Flexible(
-                      child: Text(
-                        text,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.labelSmall,
-                      ),
+      child: compact
+          ? Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 9),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                spacing: 4,
+                children: [
+                  Flexible(
+                    child: Text(
+                      text,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    const Icon(Icons.keyboard_arrow_down, size: 14),
-                  ],
-                ),
-              )
-            : _FieldContent(
-                label: label,
-                value: text,
-                icon: Icons.keyboard_arrow_down,
+                  ),
+                  const Icon(Icons.keyboard_arrow_down, size: 16),
+                ],
               ),
+            )
+          : _FieldContent(
+              label: label,
+              value: text,
+              icon: Icons.keyboard_arrow_down,
+            ),
+    );
+    if (items.isEmpty) return trigger;
+    return LayoutBuilder(
+      builder: (context, constraints) => liquid.GlassMenu(
+        trigger: trigger,
+        semanticLabel: '$label, $text',
+        menuSemanticLabel: label,
+        menuWidth: compact || !constraints.hasBoundedWidth
+            ? 240
+            : constraints.maxWidth.clamp(185, 360),
+        menuBorderRadius: 25,
+        itemBorderRadius: 15,
+        autoAdjustToScreen: true,
+        maxStackHeight: 330,
+        menuPadding: const EdgeInsets.all(7),
+        selectionColor: scheme.primaryContainer.withValues(alpha: .8),
+        items: [
+          for (final item in items.entries)
+            liquid.GlassMenuItem(
+              title: item.value,
+              semanticsSelected: item.key == selected,
+              trailing: item.key == selected
+                  ? Icon(Icons.check_rounded, color: scheme.primary, size: 19)
+                  : null,
+              onTap: () => onChange(item.key),
+            ),
+        ],
       ),
     );
   }
@@ -197,7 +254,7 @@ class SearchRecords extends StatelessWidget {
   final bool multiple;
 
   @override
-  Widget build(BuildContext context) => Card(
+  Widget build(BuildContext context) => GlassContentCard(
     child: InkWell(
       child: _FieldContent(
         label: label,
@@ -213,15 +270,16 @@ class SearchRecords extends StatelessWidget {
         final result = await showDialog<Set<int>>(
           context: context,
           builder: (context) => StatefulBuilder(
-            builder: (context, change) => AlertDialog(
+            builder: (context, change) => GlassPanelDialog(
               title: Text(label),
               content: SizedBox(
                 width: 440,
                 height: 330,
                 child: Column(
                   children: [
-                    TextField(
-                      decoration: InputDecoration(labelText: context.l.search),
+                    liquid.GlassSearchBar(
+                      placeholder: context.l.search,
+                      surfaceStyle: liquid.GlassSurfaceStyle.solid,
                       onChanged: (value) =>
                           change(() => search = value.toLowerCase()),
                     ),
@@ -233,24 +291,36 @@ class SearchRecords extends StatelessWidget {
                                 .toLowerCase()
                                 .contains(search),
                           ))
-                            CheckboxListTile(
-                              title: Text(record['name'] as String),
-                              subtitle: record['code'] == null
-                                  ? null
-                                  : Text(record['code'] as String),
-                              value: selection.contains(record['id']),
-                              onChanged: (checked) {
-                                final id = record['id'] as int;
-                                if (!multiple) {
-                                  Navigator.pop(context, {id});
-                                } else {
-                                  change(
-                                    () => checked == true
-                                        ? selection.add(id)
-                                        : selection.remove(id),
-                                  );
-                                }
-                              },
+                            Semantics(
+                              checked: multiple
+                                  ? selection.contains(record['id'])
+                                  : null,
+                              child: GlassRow(
+                                title: Text(record['name'] as String),
+                                subtitle: record['code'] == null
+                                    ? null
+                                    : Text(record['code'] as String),
+                                trailing: selection.contains(record['id'])
+                                    ? Icon(
+                                        Icons.check_rounded,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
+                                      )
+                                    : null,
+                                onTap: () {
+                                  final id = record['id'] as int;
+                                  if (multiple) {
+                                    change(() {
+                                      if (!selection.remove(id)) {
+                                        selection.add(id);
+                                      }
+                                    });
+                                  } else {
+                                    Navigator.pop(context, {id});
+                                  }
+                                },
+                              ),
                             ),
                         ],
                       ),
@@ -259,12 +329,12 @@ class SearchRecords extends StatelessWidget {
                 ),
               ),
               actions: [
-                TextButton(
+                GlassSecondaryAction(
                   onPressed: () => Navigator.pop(context),
                   child: Text(context.l.cancel),
                 ),
                 if (multiple)
-                  FilledButton(
+                  GlassAction(
                     onPressed: () => Navigator.pop(context, selection),
                     child: Text(context.l.confirm),
                   ),
@@ -283,21 +353,17 @@ Widget field(
   String label, {
   bool number = false,
   ValueChanged<String>? onChanged,
-}) => Card(
-  child: Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-    child: TextField(
+}) => Padding(
+  padding: const EdgeInsets.only(bottom: 10),
+  child: Semantics(
+    label: label,
+    child: liquid.GlassTextField(
       controller: controller,
-      decoration: InputDecoration(
-        labelText: label,
-        floatingLabelBehavior: FloatingLabelBehavior.always,
-        border: InputBorder.none,
-        enabledBorder: InputBorder.none,
-        focusedBorder: InputBorder.none,
-        contentPadding: EdgeInsets.zero,
-        filled: false,
-        isDense: true,
-      ),
+      placeholder: label,
+      placeholderStyle: const TextStyle(fontSize: 14),
+      shape: const liquid.LiquidRoundedSuperellipse(borderRadius: 17),
+      surfaceStyle: liquid.GlassSurfaceStyle.solid,
+      minHeight: 50,
       keyboardType: number
           ? const TextInputType.numberWithOptions(decimal: true)
           : TextInputType.text,

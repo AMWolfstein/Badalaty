@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart' as liquid;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -70,7 +71,7 @@ class _HistoryState extends ConsumerState<HistoryPage> {
     return ListView(
       padding: sectionListPadding(context),
       children: [
-        Card(
+        GlassContentCard(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(8, 4, 8, 10),
             child: Column(
@@ -78,7 +79,7 @@ class _HistoryState extends ConsumerState<HistoryPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    IconButton(
+                    GlassIconAction(
                       tooltip: MaterialLocalizations.of(context)
                           .previousMonthTooltip,
                       onPressed: () => setState(() {
@@ -93,7 +94,7 @@ class _HistoryState extends ConsumerState<HistoryPage> {
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                     ),
-                    IconButton(
+                    GlassIconAction(
                       tooltip: MaterialLocalizations.of(context)
                           .nextMonthTooltip,
                       onPressed: () => setState(() {
@@ -181,27 +182,25 @@ class _HistoryState extends ConsumerState<HistoryPage> {
               ])
                 Padding(
                   padding: const EdgeInsetsDirectional.only(end: 10),
-                  child: ChoiceChip(
-                    label: Text(
-                      kind.isEmpty
-                          ? l.all
-                          : recordedDayStatuses.contains(kind)
-                          ? l.statusName(kind)
-                          : l.categoryName(kind),
-                    ),
+                  child: GlassFilterChip(
+                    label: kind.isEmpty
+                        ? l.all
+                        : recordedDayStatuses.contains(kind)
+                        ? l.statusName(kind)
+                        : l.categoryName(kind),
                     selected: category == kind,
-                    onSelected: (_) => setState(() => category = kind),
+                    onTap: () => setState(() => category = kind),
                   ),
                 ),
             ],
           ),
         ),
         if (pickedDay != null)
-          ListTile(
+          GlassRow(
             title: Text(dateLabel(context, pickedDay!)),
             subtitle: Text(l.statusName(statusOf(records, pickedDay!, today))),
-            trailing: PopupMenuButton<String>(
-              tooltip: l.status,
+            trailing: GlassOverflow<String>(
+              label: l.status,
               onSelected: (value) async {
                 try {
                   final day = pickedDay!;
@@ -210,7 +209,7 @@ class _HistoryState extends ConsumerState<HistoryPage> {
                   if (context.mounted) feedback(context, l.error);
                 }
               },
-              itemBuilder: (_) => [
+              items: {
                 for (final status in [
                   'automatic',
                   ...recordedDayStatuses,
@@ -218,24 +217,22 @@ class _HistoryState extends ConsumerState<HistoryPage> {
                   'weekend',
                   'noAllowance',
                 ])
-                  PopupMenuItem(
-                    value: status,
-                    child: Text(
-                      status == 'automatic' ? l.clear : l.statusName(status),
-                    ),
-                  ),
-              ],
+                  status: status == 'automatic'
+                      ? l.clear
+                      : l.statusName(status),
+              },
             ),
           ),
         Row(
           children: [
             Expanded(
-              child: TextField(
-                decoration: InputDecoration(labelText: l.search),
+              child: liquid.GlassSearchBar(
+                placeholder: l.search,
+                surfaceStyle: liquid.GlassSurfaceStyle.solid,
                 onChanged: (v) => setState(() => search = v.toLowerCase()),
               ),
             ),
-            IconButton(
+            GlassIconAction(
               tooltip: l.category,
               onPressed: () => setState(() => showFilters = !showFilters),
               icon: const Icon(Icons.tune),
@@ -269,11 +266,10 @@ class _HistoryState extends ConsumerState<HistoryPage> {
           else
             EntryTile(
               record,
-              trailing: PopupMenuButton<String>(
-                itemBuilder: (_) => [
-                  PopupMenuItem(value: 'copy', child: Text(l.copy)),
-                  PopupMenuItem(value: 'delete', child: Text(l.delete)),
-                ],
+              trailing: GlassOverflow<String>(
+                label: MaterialLocalizations.of(context).moreButtonTooltip,
+                items: {'copy': l.copy, 'delete': l.delete},
+                destructiveValue: 'delete',
                 onSelected: (value) async {
                   final id = record['id'] as int;
                   if (value == 'copy') {

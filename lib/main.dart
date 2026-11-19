@@ -1,13 +1,19 @@
 import 'dart:async';
 import 'dart:io';
 
+// The glass package still uses the SDK Cupertino widgets and delegates.
+// ignore: deprecated_member_use
+import 'package:flutter/cupertino.dart'
+    as sdk_cupertino
+    show CupertinoTheme, CupertinoThemeData, CupertinoTextThemeData;
+import 'package:flutter_localizations/flutter_localizations.dart'
+    as sdk_localizations;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_localizations/flutter_localizations.dart'
-    show GlobalWidgetsLocalizations;
 import 'package:cupertino_ui/cupertino_ui.dart'
     show GlobalCupertinoLocalizations;
 import 'package:go_router/go_router.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart' as liquid;
 
 import 'allowances/calculation.dart';
 import 'allowances/entry.dart';
@@ -27,7 +33,11 @@ import 'widgets/glass_navigation_bar.dart';
 import 'widgets/glass_design.dart';
 import 'widgets/platform.dart';
 
-void main() => runApp(const ProviderScope(child: BadalatyApp()));
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await liquid.LiquidGlassWidgets.initialize();
+  runApp(const ProviderScope(child: BadalatyApp()));
+}
 
 class BadalatyApp extends ConsumerStatefulWidget {
   const BadalatyApp({super.key});
@@ -251,13 +261,34 @@ class _AppState extends ConsumerState<BadalatyApp> with WidgetsBindingObserver {
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       routerConfig: router,
+      builder: (context, child) {
+        final theme = Theme.of(context);
+        return sdk_cupertino.CupertinoTheme(
+          data: sdk_cupertino.CupertinoThemeData(
+            brightness: theme.brightness,
+            primaryColor: theme.colorScheme.primary,
+            textTheme: sdk_cupertino.CupertinoTextThemeData(
+              textStyle: theme.textTheme.bodyLarge,
+            ),
+          ),
+          child: liquid.LiquidGlassWidgets.wrap(
+            brightnessResolver: Theme.maybeBrightnessOf,
+            theme: const liquid.GlassThemeData.ios26(),
+            adaptiveQuality: true,
+            respectSystemAccessibility: true,
+            child: child!,
+          ),
+        );
+      },
       onGenerateTitle: (context) => context.l.title,
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
+        // ignore: deprecated_member_use
+        sdk_localizations.GlobalCupertinoLocalizations.delegate,
+        sdk_localizations.GlobalWidgetsLocalizations.delegate,
       ],
       locale: language == 'ar' || language == 'en'
           ? Locale(language as String)
@@ -290,16 +321,24 @@ class _Frame extends StatelessWidget {
     ];
     final current = _sections.indexOf(path);
     return GlassScaffold(
-      appBar: AppBar(
+      appBar: GlassHeader(
         title: current == 0
             ? Column(
+                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     dateLabel(context, dayKey(DateTime.now())),
                     style: Theme.of(context).textTheme.labelSmall,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  Text(l.title),
+                  Text(
+                    l.title,
+                    maxLines: 1,
+                    style: Theme.of(context).textTheme.titleLarge
+                        ?.copyWith(fontSize: 21, height: 1.15),
+                  ),
                 ],
               )
             : Text(labels[current]),
@@ -317,7 +356,7 @@ class _Frame extends StatelessWidget {
             ),
         ],
       ),
-      body: SafeArea(bottom: false, child: child),
+      body: SafeArea(top: false, bottom: false, child: child),
       bottomNavigationBar: GlassNavigationBar(
         selectedIndex: current,
         onSelected: (index) {
@@ -342,7 +381,7 @@ class _Section extends ConsumerWidget {
       .when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (_, _) => Center(
-          child: TextButton(
+          child: GlassSecondaryAction(
             onPressed: () => ref.invalidate(recordsProvider),
             child: Text(context.l.error),
           ),
