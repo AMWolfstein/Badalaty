@@ -80,90 +80,88 @@ class _SetupPageState extends ConsumerState<SetupPage> {
                     double.infinity,
                   ),
                 ),
-                child: IntrinsicHeight(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Image.asset(
-                        'assets/branding/badalaty-icon.png',
-                        height: 88,
-                        cacheHeight: 264,
-                        excludeFromSemantics: true,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Image.asset(
+                      'assets/branding/badalaty-icon.png',
+                      height: 88,
+                      cacheHeight: 264,
+                      excludeFromSemantics: true,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      l.setupWelcome,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.headlineSmall,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      l.setupIntro,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: theme.colorScheme.onSurfaceVariant,
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        l.setupWelcome,
-                        textAlign: TextAlign.center,
-                        style: theme.textTheme.headlineSmall,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        l.setupIntro,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Choice(
-                              l.language,
-                              language,
-                              {
-                                'system': l.system,
-                                'ar': 'العربية',
-                                'en': 'English',
-                              },
-                              (value) {
-                                setState(() => language = value);
-                                widget.onLanguageChanged(value);
-                              },
-                            ),
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Choice(
+                            l.language,
+                            language,
+                            {
+                              'system': l.system,
+                              'ar': 'العربية',
+                              'en': 'English',
+                            },
+                            (value) {
+                              setState(() => language = value);
+                              widget.onLanguageChanged(value);
+                            },
                           ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Choice(
-                              l.theme,
-                              appearance,
-                              {
-                                'system': l.system,
-                                'light': l.light,
-                                'dark': l.dark,
-                              },
-                              (value) {
-                                setState(() => appearance = value);
-                                widget.onThemeChanged(value);
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 14),
-                      field(name, l.setupName),
-                      const SizedBox(height: 12),
-                      field(code, l.employeeIdOptional),
-                      const Spacer(),
-                      const SizedBox(height: 24),
-                      ValueListenableBuilder(
-                        valueListenable: name,
-                        builder: (context, value, _) => FilledButton(
-                          onPressed: busy || value.text.trim().isEmpty
-                              ? null
-                              : save,
-                          child: Text(l.setupStart),
                         ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Choice(
+                            l.theme,
+                            appearance,
+                            {
+                              'system': l.system,
+                              'light': l.light,
+                              'dark': l.dark,
+                            },
+                            (value) {
+                              setState(() => appearance = value);
+                              widget.onThemeChanged(value);
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    field(name, l.setupName),
+                    const SizedBox(height: 12),
+                    field(code, l.employeeIdOptional),
+                    const SizedBox(height: 24),
+                    ValueListenableBuilder(
+                      valueListenable: name,
+                      builder: (context, value, _) => GlassAction(
+                        onPressed: busy || value.text.trim().isEmpty
+                            ? null
+                            : save,
+                        child: Text(l.setupStart),
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        l.setupEdit,
-                        textAlign: TextAlign.center,
-                        style: theme.textTheme.bodySmall,
-                      ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      l.setupEdit,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodySmall,
+                    ),
+                  ],
                 ),
               ),
             ),

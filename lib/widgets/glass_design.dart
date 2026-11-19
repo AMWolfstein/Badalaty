@@ -1,5 +1,10 @@
+import 'package:cupertino_ui/cupertino_ui.dart'
+    show CupertinoThemeData, CupertinoTextThemeData;
 import 'package:flutter/services.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart' as liquid;
 import 'package:material_ui/material_ui.dart';
+
+import 'glass_navigation_bar.dart';
 
 ThemeData badalatyTheme(Brightness brightness, {required bool arabic}) {
   final dark = brightness == Brightness.dark;
@@ -40,6 +45,18 @@ ThemeData badalatyTheme(Brightness brightness, {required bool arabic}) {
   return ThemeData(
     fontFamily: font,
     fontFamilyFallback: fallbacks,
+    cupertinoOverrideTheme: CupertinoThemeData(
+      brightness: brightness,
+      primaryColor: scheme.primary,
+      textTheme: CupertinoTextThemeData(
+        textStyle: TextStyle(
+          fontFamily: font,
+          fontFamilyFallback: fallbacks,
+          color: scheme.onSurface,
+          fontSize: 16,
+        ),
+      ),
+    ),
     colorScheme: scheme,
     scaffoldBackgroundColor: scheme.surface,
     appBarTheme: AppBarThemeData(
@@ -142,24 +159,206 @@ class GlassScaffold extends StatelessWidget {
     super.key,
   });
 
-  final PreferredSizeWidget? appBar;
+  final GlassHeader? appBar;
   final Widget body;
   final Widget? bottomNavigationBar;
 
   @override
-  Widget build(BuildContext context) => Stack(
-    fit: StackFit.expand,
-    children: [
-      const RepaintBoundary(child: _GlassBackground()),
-      Scaffold(
-        backgroundColor: Colors.transparent,
-        extendBody: bottomNavigationBar != null,
-        appBar: appBar,
-        body: body,
-        bottomNavigationBar: bottomNavigationBar,
+  Widget build(BuildContext context) {
+    final floatingTabs = bottomNavigationBar != null;
+    final safeTop = MediaQuery.paddingOf(context).top;
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: Theme.of(context).appBarTheme.systemOverlayStyle!,
+      child: Material(
+        type: MaterialType.transparency,
+        child: liquid.GlassScaffold(
+          background: const RepaintBoundary(child: _GlassBackground()),
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          extendBody: floatingTabs,
+          topEdgeFade: false,
+          appBarHeight: GlassHeader.height,
+          bottomBarHeight: glassTabBarSpace,
+          appBar: appBar,
+          bottomBar: bottomNavigationBar,
+          body: appBar == null
+              ? body
+              : Padding(
+                  padding: EdgeInsets.only(
+                    top: floatingTabs ? safeTop + GlassHeader.height : 0,
+                  ),
+                  child: MediaQuery.removePadding(
+                    context: context,
+                    removeTop: true,
+                    child: body,
+                  ),
+                ),
+        ),
       ),
-    ],
+    );
+  }
+}
+
+class GlassHeader extends StatelessWidget {
+  const GlassHeader({required this.title, this.actions = const [], super.key});
+
+  static const height = 56.0;
+  final Widget title;
+  final List<Widget> actions;
+
+  @override
+  Widget build(BuildContext context) => liquid.GlassAppBar(
+    toolbarHeight: height,
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    title: DefaultTextStyle.merge(
+      style: Theme.of(context).textTheme.titleLarge,
+      child: title,
+    ),
+    centerTitle: false,
+    leading: ModalRoute.of(context)?.canPop == true
+        ? Tooltip(
+            message: MaterialLocalizations.of(context).backButtonTooltip,
+            child: liquid.GlassIconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => Navigator.of(context).maybePop(),
+            ),
+          )
+        : null,
+    actions: actions,
   );
+}
+
+class GlassContentCard extends StatelessWidget {
+  const GlassContentCard({required this.child, this.color, super.key});
+
+  final Widget child;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) => liquid.GlassContainer.card(
+    color: color,
+    surfaceStyle: liquid.GlassSurfaceStyle.solid,
+    shape: const liquid.LiquidRoundedSuperellipse(borderRadius: 25),
+    margin: const EdgeInsets.only(bottom: 10),
+    padding: EdgeInsets.zero,
+    child: child,
+  );
+}
+
+class GlassRow extends StatelessWidget {
+  const GlassRow({
+    required this.title,
+    this.subtitle,
+    this.leading,
+    this.trailing,
+    this.onTap,
+    this.onLongPress,
+    super.key,
+  });
+
+  final Widget title;
+  final Widget? subtitle;
+  final Widget? leading;
+  final Widget? trailing;
+  final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return liquid.GlassListTile(
+      leading: leading,
+      trailing: trailing,
+      title: title,
+      subtitle: subtitle,
+      onTap: onTap,
+      onLongPress: onLongPress,
+      titleStyle: theme.textTheme.bodyLarge,
+      subtitleStyle: theme.textTheme.bodySmall?.copyWith(
+        color: theme.colorScheme.onSurfaceVariant,
+      ),
+    );
+  }
+}
+
+class GlassToggleRow extends StatelessWidget {
+  const GlassToggleRow({
+    required this.label,
+    required this.value,
+    required this.onChanged,
+    this.secondary,
+    this.subtitle,
+    super.key,
+  });
+
+  final String label;
+  final bool value;
+  final ValueChanged<bool>? onChanged;
+  final Widget? secondary;
+  final Widget? subtitle;
+
+  @override
+  Widget build(BuildContext context) => GlassRow(
+    leading: secondary,
+    title: Text(label),
+    subtitle: subtitle,
+    onTap: onChanged == null ? null : () => onChanged!(!value),
+    trailing: liquid.GlassSwitch(
+      value: value,
+      onChanged: onChanged,
+      semanticLabel: label,
+    ),
+  );
+}
+
+class GlassAction extends StatelessWidget {
+  const GlassAction({required this.onPressed, required Widget child, super.key})
+    : label = child,
+      icon = null;
+
+  const GlassAction.icon({
+    required this.onPressed,
+    required this.icon,
+    required this.label,
+    super.key,
+  });
+
+  final VoidCallback? onPressed;
+  final Widget label;
+  final Widget? icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final foreground = onPressed == null
+        ? scheme.onSurfaceVariant
+        : scheme.onPrimary;
+    return liquid.GlassButton.custom(
+      onTap: onPressed ?? () {},
+      enabled: onPressed != null,
+      height: 49,
+      color: onPressed == null ? scheme.surfaceContainerHigh : scheme.primary,
+      shape: const liquid.LiquidRoundedSuperellipse(borderRadius: 19),
+      surfaceStyle: liquid.GlassSurfaceStyle.solid,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        child: DefaultTextStyle.merge(
+          style: TextStyle(color: foreground, fontWeight: FontWeight.w700),
+          child: IconTheme(
+            data: IconThemeData(color: foreground, size: 20),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              spacing: 7,
+              children: [
+                ?icon,
+                Flexible(child: label),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _GlassBackground extends StatelessWidget {
@@ -377,4 +576,185 @@ class GlassHighlight extends StatelessWidget {
       ),
     );
   }
+}
+
+class GlassPanelDialog extends StatelessWidget {
+  const GlassPanelDialog({
+    this.title,
+    this.content,
+    this.actions = const [],
+    this.scrollable = false,
+    super.key,
+  });
+
+  final Widget? title;
+  final Widget? content;
+  final List<Widget> actions;
+  final bool scrollable;
+
+  @override
+  Widget build(BuildContext context) => Dialog(
+    backgroundColor: Colors.transparent,
+    child: ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 480),
+      child: liquid.GlassContainer.card(
+        useOwnLayer: true,
+        shape: const liquid.LiquidRoundedSuperellipse(borderRadius: 29),
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          spacing: 14,
+          children: [
+            if (title != null)
+              DefaultTextStyle.merge(
+                style: Theme.of(context).textTheme.titleLarge,
+                child: title!,
+              ),
+            if (content != null)
+              Flexible(
+                child: scrollable
+                    ? SingleChildScrollView(child: content)
+                    : content!,
+              ),
+            if (actions.isNotEmpty)
+              Wrap(
+                alignment: WrapAlignment.end,
+                spacing: 8,
+                runSpacing: 6,
+                children: actions,
+              ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+class GlassFilterChip extends StatelessWidget {
+  const GlassFilterChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+    super.key,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return liquid.GlassChip(
+      label: label,
+      selected: selected,
+      onTap: onTap,
+      labelStyle: theme.textTheme.labelLarge,
+      selectedColor: theme.colorScheme.primaryContainer,
+      surfaceStyle: liquid.GlassSurfaceStyle.solid,
+    );
+  }
+}
+
+class GlassOverflow<T> extends StatelessWidget {
+  const GlassOverflow({
+    required this.label,
+    required this.items,
+    required this.onSelected,
+    this.destructiveValue,
+    super.key,
+  });
+
+  final String label;
+  final Map<T, String> items;
+  final ValueChanged<T> onSelected;
+  final T? destructiveValue;
+
+  @override
+  Widget build(BuildContext context) => liquid.GlassPullDownButton(
+    icon: const Icon(Icons.more_horiz),
+    semanticLabel: label,
+    menuSemanticLabel: label,
+    items: [
+      for (final item in items.entries)
+        liquid.GlassMenuItem(
+          title: item.value,
+          isDestructive: item.key == destructiveValue,
+          onTap: () => onSelected(item.key),
+        ),
+    ],
+  );
+}
+
+class GlassIconAction extends StatelessWidget {
+  const GlassIconAction({
+    required this.icon,
+    required this.onPressed,
+    required this.tooltip,
+    this.floating = false,
+    super.key,
+  });
+
+  final Widget icon;
+  final VoidCallback? onPressed;
+  final String tooltip;
+  final bool floating;
+
+  @override
+  Widget build(BuildContext context) => Tooltip(
+    message: tooltip,
+    child: liquid.GlassIconButton(
+      icon: icon,
+      onPressed: onPressed,
+      semanticLabel: tooltip,
+      size: 44,
+      iconSize: 20,
+      surfaceStyle: floating
+          ? liquid.GlassSurfaceStyle.glass
+          : liquid.GlassSurfaceStyle.solid,
+    ),
+  );
+}
+
+class GlassSecondaryAction extends StatelessWidget {
+  const GlassSecondaryAction({
+    required this.onPressed,
+    required this.child,
+    super.key,
+  });
+
+  final VoidCallback? onPressed;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return liquid.GlassButton.custom(
+      onTap: onPressed ?? () {},
+      enabled: onPressed != null,
+      height: 46,
+      surfaceStyle: liquid.GlassSurfaceStyle.solid,
+      color: scheme.surfaceContainerHigh,
+      shape: const liquid.LiquidRoundedSuperellipse(borderRadius: 16),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 13),
+        child: DefaultTextStyle.merge(
+          style: TextStyle(color: scheme.onSurface),
+          child: child,
+        ),
+      ),
+    );
+  }
+}
+
+class GlassContentGroup extends StatelessWidget {
+  const GlassContentGroup({required this.children, super.key});
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) => liquid.GlassGroupedSection(
+    surfaceStyle: liquid.GlassSurfaceStyle.solid,
+    children: children,
+  );
 }

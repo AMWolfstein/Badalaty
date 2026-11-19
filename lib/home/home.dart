@@ -46,15 +46,15 @@ class HomePage extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        FilledButton.icon(
+        GlassAction.icon(
           onPressed: () => context.push('/add'),
           icon: const Icon(Icons.add),
           label: Text(l.addEntry),
         ),
         if (trip != null) ...[
           GlassHeading(l.activeTrip),
-          Card(
-            child: ListTile(
+          GlassContentCard(
+            child: GlassRow(
               leading: const GlassIcon(Icons.place_outlined),
               title: Text(trip['name'] as String),
               subtitle: Text(
@@ -68,7 +68,7 @@ class HomePage extends StatelessWidget {
         ],
         GlassHeading(
           l.recent,
-          action: TextButton(
+          action: GlassSecondaryAction(
             onPressed: () => context.go('/history'),
             child: Text(l.seeAll),
           ),
@@ -89,8 +89,8 @@ class EntryTile extends StatelessWidget {
   final Record entry;
   final Widget? trailing;
   @override
-  Widget build(BuildContext context) => Card(
-    child: ListTile(
+  Widget build(BuildContext context) => GlassContentCard(
+    child: GlassRow(
       leading: GlassIcon(
         categoryIcons[entry['category']] ?? Icons.receipt_long_outlined,
         tone: categoryTones[entry['category']] ?? 0,
@@ -121,14 +121,14 @@ class AddEntryPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = context.l;
     return GlassScaffold(
-      appBar: AppBar(title: Text(l.addAllowance)),
+      appBar: GlassHeader(title: Text(l.addAllowance)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           GlassHeading(l.chooseAllowanceType),
           for (final category in Category.values)
-            Card(
-              child: ListTile(
+            GlassContentCard(
+              child: GlassRow(
                 leading: GlassIcon(
                   categoryIcons[category.name]!,
                   tone: categoryTones[category.name]!,

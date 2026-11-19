@@ -1,3 +1,6 @@
+import 'package:badalaty/forms.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart' as liquid;
+import 'package:badalaty/widgets/glass_design.dart';
 import 'package:badalaty/data/state.dart';
 import 'package:badalaty/data/store.dart';
 import 'package:badalaty/main.dart';
@@ -26,8 +29,8 @@ void main() {
       await tester.runAsync(() => state.read(recordsProvider.future));
       await tester.pumpAndSettle();
 
-      final begin = find.widgetWithText(FilledButton, 'Get started');
-      expect(tester.widget<FilledButton>(begin).onPressed, isNull);
+      final begin = find.widgetWithText(GlassAction, 'Get started');
+      expect(tester.widget<GlassAction>(begin).onPressed, isNull);
       await tester.tap(find.text('Language'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('العربية'));
@@ -38,12 +41,10 @@ void main() {
       await tester.tap(find.text('داكن'));
       await tester.pumpAndSettle();
 
-      final name = find.byType(TextField).first;
+      final name = find.byType(EditableText).first;
       await tester.enterText(name, '  أحمد  ');
       await tester.pumpAndSettle();
-      await tester.tap(
-        find.widgetWithText(FilledButton, 'ابدأ استخدام بدلاتي'),
-      );
+      await tester.tap(find.widgetWithText(GlassAction, 'ابدأ استخدام بدلاتي'));
       await tester.pumpAndSettle();
       expect(find.text('بدلاتي'), findsOneWidget);
       final settings = (await db.readAll()).settings;
@@ -52,19 +53,27 @@ void main() {
       expect(settings['language'], 'ar');
       expect(settings['theme'], 'dark');
 
-      await tester.tap(find.widgetWithText(FilledButton, 'إضافة سجل'));
+      await tester.tap(find.widgetWithText(GlassAction, 'إضافة سجل'));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(ListTile, 'بدل'));
+      await tester.tap(find.widgetWithText(GlassRow, 'بدل'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('بدل الانتقال'));
       await tester.pumpAndSettle();
+      await tester.tap(find.byType(DayField));
+      await tester.pumpAndSettle();
+      expect(find.byType(liquid.GlassDatePicker), findsOneWidget);
+      final ok = MaterialLocalizations.of(tester.element(find.byType(DayField)))
+          .okButtonLabel;
+      await tester.tap(find.text(ok));
+      await tester.pumpAndSettle();
+      expect(find.byType(liquid.GlassDatePicker), findsNothing);
       await tester.tap(find.text('العميل'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('شركة أ'));
       await tester.pumpAndSettle();
-      await tester.enterText(find.byType(TextField).at(1), '100');
+      await tester.enterText(find.byType(EditableText).at(1), '100');
       await tester.pumpAndSettle();
-      final save = find.widgetWithText(FilledButton, 'حفظ');
+      final save = find.widgetWithText(GlassAction, 'حفظ');
       await tester.scrollUntilVisible(
         save,
         180,
@@ -102,30 +111,33 @@ void main() {
     await tester.tap(
       find.descendant(
         of: find.byType(GlassNavigationBar),
-        matching: find.text('الإعدادات'),
+        matching: find.bySemanticsLabel('الإعدادات'),
       ),
     );
     await tester.pumpAndSettle();
-    final directory = find.widgetWithText(ListTile, 'العملاء والزملاء');
+    final directory = find.widgetWithText(GlassRow, 'العملاء والزملاء');
     await tester.scrollUntilVisible(directory, 120);
     await tester.drag(find.byType(Scrollable).first, const Offset(0, -220));
     await tester.pumpAndSettle();
     await tester.tap(directory.hitTestable());
     await tester.pumpAndSettle();
 
-    expect(find.byType(ChoiceChip), findsNWidgets(2));
+    expect(find.byType(GlassFilterChip), findsNWidgets(2));
     for (final (kind, label, name) in [
       ('client', 'العملاء', 'عميل جديد'),
       ('employee', 'الزملاء', 'زميل جديد'),
     ]) {
-      await tester.tap(find.widgetWithText(ChoiceChip, label));
+      await tester.tap(find.widgetWithText(GlassFilterChip, label));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, 'إضافة'));
+      await tester.tap(find.widgetWithText(GlassAction, 'إضافة'));
       await tester.pumpAndSettle();
-      expect(find.byType(TextField), findsNWidgets(kind == 'employee' ? 2 : 1));
-      await tester.enterText(find.byType(TextField).first, name);
+      expect(
+        find.byType(EditableText),
+        findsNWidgets(kind == 'employee' ? 2 : 1),
+      );
+      await tester.enterText(find.byType(EditableText).first, name);
       await tester.runAsync(() async {
-        await tester.tap(find.widgetWithText(FilledButton, 'حفظ'));
+        await tester.tap(find.widgetWithText(GlassAction, 'حفظ'));
         final record = (await db.readAll()).ofKind(kind).single;
         expect(record['name'], name);
         expect(record['code'], isNull);
@@ -175,14 +187,14 @@ void main() {
       Directionality.of(tester.element(find.text('بدلاتي'))),
       TextDirection.rtl,
     );
-    await tester.tap(find.widgetWithText(FilledButton, 'إضافة سجل'));
+    await tester.tap(find.widgetWithText(GlassAction, 'إضافة سجل'));
     await tester.pumpAndSettle();
-    expect(find.widgetWithText(ListTile, 'إجازة'), findsOneWidget);
-    expect(find.widgetWithText(ListTile, 'مكتب'), findsOneWidget);
-    await tester.tap(find.widgetWithText(ListTile, 'مكتب'));
+    expect(find.widgetWithText(GlassRow, 'إجازة'), findsOneWidget);
+    expect(find.widgetWithText(GlassRow, 'مكتب'), findsOneWidget);
+    await tester.tap(find.widgetWithText(GlassRow, 'مكتب'));
     await tester.pumpAndSettle();
     expect(find.text('قيمة السجل'), findsOneWidget);
-    await tester.tap(find.widgetWithText(FilledButton, 'حفظ السجل'));
+    await tester.tap(find.widgetWithText(GlassAction, 'حفظ السجل'));
     await tester.pumpAndSettle();
     final dayRecord = find.byType(DayRecordTile);
     await tester.scrollUntilVisible(
@@ -197,15 +209,25 @@ void main() {
     await tester.tap(
       find.descendant(
         of: find.byType(GlassNavigationBar),
-        matching: find.text('الرئيسية'),
+        matching: find.bySemanticsLabel('الرئيسية'),
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, 'إضافة سجل'));
+    await tester.tap(find.widgetWithText(GlassAction, 'إضافة سجل'));
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(ListTile, 'بدل'));
+    await tester.tap(find.widgetWithText(GlassRow, 'بدل'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('بدل السفر'));
+    await tester.pumpAndSettle();
+    final meals = find.descendant(
+      of: find.widgetWithText(GlassToggleRow, 'الوجبات'),
+      matching: find.byType(liquid.GlassSwitch),
+    );
+    expect(tester.widget<liquid.GlassSwitch>(meals).value, isTrue);
+    await tester.tap(meals);
+    await tester.pumpAndSettle();
+    expect(tester.widget<liquid.GlassSwitch>(meals).value, isFalse);
+    await tester.tap(meals);
     await tester.pumpAndSettle();
     expect(find.text('الوجبات'), findsOneWidget);
     expect(find.text('المبيت'), findsOneWidget);
@@ -214,7 +236,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('شركة أ'));
     await tester.pumpAndSettle();
-    final save = find.widgetWithText(FilledButton, 'حفظ');
+    final save = find.widgetWithText(GlassAction, 'حفظ');
     await tester.scrollUntilVisible(
       save,
       180,
@@ -261,17 +283,20 @@ void main() {
 
       final bar = find.byType(GlassNavigationBar);
       Finder tab(String title) =>
-          find.descendant(of: bar, matching: find.text(title));
+          find.descendant(of: bar, matching: find.bySemanticsLabel(title));
       expect(
         tester.getCenter(tab('Home')).dx,
         lessThan(tester.getCenter(tab('Settings')).dx),
       );
       expect(tester.widget<GlassNavigationBar>(bar).selectedIndex, 0);
-      Rect target(String label) => tester.getRect(
-        find.descendant(of: bar, matching: find.widgetWithText(InkWell, label)),
+      expect(
+        find.descendant(of: bar, matching: find.byType(liquid.GlassTabBar)),
+        findsOneWidget,
       );
-      expect(target('Home').width, greaterThanOrEqualTo(48));
-      expect(target('History').left - target('Home').right, closeTo(4, 0.01));
+      expect(
+        tester.getCenter(tab('History')).dx - tester.getCenter(tab('Home')).dx,
+        greaterThanOrEqualTo(48),
+      );
 
       await tester.runAsync(
         () => db.save('settings', {
@@ -304,42 +329,38 @@ void main() {
         }
         await tester.pumpAndSettle();
         expect(tester.widget<GlassNavigationBar>(bar).selectedIndex, index);
-        expect(find.widgetWithText(AppBar, label), findsOneWidget);
+        expect(find.widgetWithText(GlassHeader, label), findsOneWidget);
         if (index == 3) {
-          for (final filter in ['كل العملاء', 'كل المأموريات', 'كل الأنواع']) {
+          for (final filter in ['كل العملاء', 'كل المأموريات', 'الكل']) {
             expect(find.text(filter), findsOneWidget);
           }
-          await tester.tap(find.text('كل الأنواع'));
+          await tester.tap(find.text('الكل'));
           await tester.pumpAndSettle();
           expect(
-            find.widgetWithText(PopupMenuItem<String>, 'بدل السفر'),
+            find.widgetWithText(liquid.GlassMenuItem, 'بدل السفر'),
             findsOneWidget,
           );
           await tester.tap(
-            find.widgetWithText(PopupMenuItem<String>, 'بدل السفر'),
+            find.widgetWithText(liquid.GlassMenuItem, 'بدل السفر'),
           );
           await tester.pumpAndSettle();
-          expect(find.text('كل الأنواع'), findsNothing);
+          expect(find.text('الكل'), findsNothing);
         }
       }
       await tester.tap(tab('الإعدادات'));
       await tester.pumpAndSettle();
       expect(tester.widget<GlassNavigationBar>(bar).selectedIndex, 4);
-      expect(find.widgetWithText(AppBar, 'الإعدادات'), findsOneWidget);
+      expect(find.widgetWithText(GlassHeader, 'الإعدادات'), findsOneWidget);
 
-      final backups = find.widgetWithText(ListTile, 'النسخ الاحتياطي');
+      final backups = find.widgetWithText(GlassRow, 'النسخ الاحتياطي');
       await tester.scrollUntilVisible(backups, 180);
       await tester.drag(find.byType(ListView), const Offset(0, -180));
       await tester.pumpAndSettle();
-      final glass = find.descendant(of: bar, matching: find.byType(ClipRRect));
-      expect(
-        tester.getBottomLeft(backups).dy,
-        lessThan(tester.getTopLeft(glass).dy),
-      );
+      expect(backups.hitTestable(), findsOneWidget);
       await tester.tap(backups);
       await tester.pumpAndSettle();
       expect(
-        find.widgetWithText(ListTile, 'استعادة نسخة احتياطية'),
+        find.widgetWithText(GlassRow, 'استعادة نسخة احتياطية'),
         findsOneWidget,
       );
       expect(tester.takeException(), isNull);
@@ -382,17 +403,17 @@ void main() {
           expect(mirrors, findsNWidgets(rtl ? count : 0));
         }
 
-        await tester.tap(find.widgetWithText(FilledButton, choose));
+        await tester.tap(find.widgetWithText(GlassAction, choose));
         await tester.pumpAndSettle();
         expectDirection(find.byIcon(Icons.chevron_right), 3);
         expectDirection(
           find.descendant(
-            of: find.byType(AppBar),
+            of: find.byType(GlassHeader),
             matching: find.byIcon(Icons.arrow_back),
           ),
           1,
         );
-        await tester.tap(find.widgetWithText(ListTile, allowance));
+        await tester.tap(find.widgetWithText(GlassRow, allowance));
         await tester.pumpAndSettle();
         expectDirection(find.byIcon(Icons.chevron_right), 3);
 
@@ -402,7 +423,7 @@ void main() {
         }
         Finder tab(String text) => find.descendant(
           of: find.byType(GlassNavigationBar),
-          matching: find.text(text),
+          matching: find.bySemanticsLabel(text),
         );
         await tester.tap(tab(history));
         await tester.pumpAndSettle();

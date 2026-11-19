@@ -97,18 +97,12 @@ class _ReportsState extends State<ReportsPage> {
               (v) => setState(() => assignment = v),
               compact: true,
             ),
-            Choice(
-              l.category,
-              category,
-              {
-                '': l.allCategories,
-                for (final c in Category.values) c.name: l.categoryName(c.name),
-              },
-              (v) => setState(() => category = v),
-              compact: true,
-            ),
           ],
         ),
+        Choice(l.category, category, {
+          '': l.all,
+          for (final c in Category.values) c.name: l.categoryName(c.name),
+        }, (value) => setState(() => category = value)),
         GlassHighlight(
           label: l.periodAllowance,
           value: context.formattedNumber(ownerTotal(entries)),
@@ -124,8 +118,8 @@ class _ReportsState extends State<ReportsPage> {
         ),
         GlassHeading(l.allowanceBreakdown),
         for (final kind in Category.values)
-          Card(
-            child: ListTile(
+          GlassContentCard(
+            child: GlassRow(
               leading: GlassIcon(
                 categoryIcons[kind.name]!,
                 tone: categoryTones[kind.name]!,
@@ -149,7 +143,7 @@ class _ReportsState extends State<ReportsPage> {
           'ar': l.arabic,
           'en': l.english,
         }, (v) => setState(() => language = v)),
-        FilledButton.icon(
+        GlassAction.icon(
           icon: const Icon(Icons.download),
           label: Text(l.export),
           onPressed: busy || start.compareTo(end) > 0

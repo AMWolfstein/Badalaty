@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/state.dart';
+import '../widgets/glass_design.dart';
 import '../data/store.dart';
 import '../forms.dart';
 import '../l10n/labels.dart';
@@ -66,7 +67,7 @@ class _DirectoryEditorState extends ConsumerState<_DirectoryEditor> {
   }
 
   @override
-  Widget build(BuildContext context) => AlertDialog(
+  Widget build(BuildContext context) => GlassPanelDialog(
     title: Text(
       widget.previous != null
           ? context.l.edit
@@ -85,11 +86,11 @@ class _DirectoryEditorState extends ConsumerState<_DirectoryEditor> {
       ),
     ),
     actions: [
-      TextButton(
+      GlassSecondaryAction(
         onPressed: busy ? null : () => Navigator.pop(context),
         child: Text(context.l.cancel),
       ),
-      FilledButton(onPressed: busy ? null : save, child: Text(context.l.save)),
+      GlassAction(onPressed: busy ? null : save, child: Text(context.l.save)),
     ],
   );
 }

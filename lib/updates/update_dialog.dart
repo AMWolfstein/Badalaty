@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../l10n/labels.dart';
+import '../widgets/glass_design.dart';
 import 'github_updates.dart';
 
 class UpdateDialog extends StatefulWidget {
@@ -59,7 +60,7 @@ class _UpdateDialogState extends State<UpdateDialog> {
         final notes = release?.notes[l.localeName] ?? release?.notes['en'];
         return PopScope(
           canPop: !_busy,
-          child: AlertDialog(
+          child: GlassPanelDialog(
             title: Text(l.appUpdates),
             scrollable: true,
             content: Column(
@@ -102,17 +103,17 @@ class _UpdateDialogState extends State<UpdateDialog> {
               ],
             ),
             actions: [
-              TextButton(
+              GlassSecondaryAction(
                 onPressed: _busy ? null : () => Navigator.pop(context),
                 child: Text(l.cancel),
               ),
               if (snapshot.hasError)
-                FilledButton(
+                GlassAction(
                   onPressed: () => setState(() => _check = _updates.check()),
                   child: Text(l.retryUpdate),
                 )
               else if (release != null)
-                FilledButton(
+                GlassAction(
                   onPressed: _busy ? null : () => _install(release),
                   child: Text(_downloaded ? l.installUpdate : l.downloadUpdate),
                 ),

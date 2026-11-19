@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../l10n/labels.dart';
+import '../widgets/glass_design.dart';
 
 Future<void> deliverFile(
   BuildContext context,
@@ -14,18 +15,18 @@ Future<void> deliverFile(
   final l = context.l;
   final share = await showDialog<bool>(
     context: context,
-    builder: (context) => AlertDialog(
+    builder: (context) => GlassPanelDialog(
       title: Text(name),
       actions: [
-        TextButton(
+        GlassSecondaryAction(
           onPressed: () => Navigator.pop(context),
           child: Text(l.cancel),
         ),
-        TextButton(
+        GlassSecondaryAction(
           onPressed: () => Navigator.pop(context, true),
           child: Text(l.share),
         ),
-        FilledButton(
+        GlassAction(
           onPressed: () => Navigator.pop(context, false),
           child: Text(l.save),
         ),
