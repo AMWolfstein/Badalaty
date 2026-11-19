@@ -384,11 +384,15 @@ class _SettingsEditorState extends ConsumerState<_SettingsEditor> {
         'basisPoints': percent,
       };
     } else {
-      if (a.text.trim().isEmpty || b.text.trim().isEmpty) {
+      if (a.text.trim().isEmpty) {
         feedback(context, context.l.missingFields);
         return;
       }
-      changes = {'name': a.text.trim(), 'code': b.text.trim()};
+      final employeeId = b.text.trim();
+      changes = {
+        'name': a.text.trim(),
+        'code': employeeId.isEmpty ? null : employeeId,
+      };
     }
     setState(() => busy = true);
     try {
@@ -431,7 +435,8 @@ class _SettingsEditorState extends ConsumerState<_SettingsEditor> {
                           widget.settings['name'] as String? ?? l.profile,
                         ),
                         subtitle: Text(
-                          widget.settings['code'] as String? ?? l.employeeId,
+                          widget.settings['code'] as String? ??
+                              l.employeeIdOptional,
                         ),
                       ),
                     ),
@@ -442,7 +447,7 @@ class _SettingsEditorState extends ConsumerState<_SettingsEditor> {
                   ),
                   field(
                     b,
-                    widget.rates ? l.lodging : l.employeeId,
+                    widget.rates ? l.lodging : l.employeeIdOptional,
                     number: widget.rates,
                   ),
                   if (widget.rates) field(c, l.percentage, number: true),

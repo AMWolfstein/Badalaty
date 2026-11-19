@@ -13,6 +13,7 @@ import 'allowances/calculation.dart';
 import 'allowances/entry.dart';
 import 'assignments/assignments.dart';
 import 'data/state.dart';
+import 'data/store.dart';
 import 'forms.dart';
 import 'history/history.dart';
 import 'home/home.dart';
@@ -21,6 +22,7 @@ import 'l10n/labels.dart';
 import 'reports/reports.dart';
 import 'records/add_record.dart';
 import 'settings/settings.dart';
+import 'settings/setup.dart';
 import 'widgets/glass_navigation_bar.dart';
 import 'widgets/glass_design.dart';
 import 'widgets/platform.dart';
@@ -36,8 +38,51 @@ class BadalatyApp extends ConsumerStatefulWidget {
 const _sections = ['/', '/history', '/assignments', '/reports', '/settings'];
 
 class _AppState extends ConsumerState<BadalatyApp> with WidgetsBindingObserver {
+  String? setupLanguage;
+  String? setupTheme;
+  String? pendingWidgetRoute;
+  bool? setupRequired;
+
+  bool needsSetup(List<Record> records) =>
+      ((records.settings['name'] as String?) ?? '').trim().isEmpty;
+
   late final router = GoRouter(
+    redirect: (_, state) {
+      final records = ref.read(recordsProvider).value;
+      if (records == null) return null;
+      final onSetup = state.uri.path == '/setup';
+      if (needsSetup(records)) {
+        return onSetup
+            ? null
+            : Uri(
+                path: '/setup',
+                queryParameters: {'next': state.uri.toString()},
+              ).toString();
+      }
+      if (!onSetup) return null;
+      final next = Uri.tryParse(state.uri.queryParameters['next'] ?? '');
+      return next != null &&
+              !next.hasScheme &&
+              !next.hasAuthority &&
+              next.path.startsWith('/') &&
+              next.path != '/setup'
+          ? next.toString()
+          : '/';
+    },
     routes: [
+      GoRoute(
+        path: '/setup',
+        builder: (_, _) {
+          final settings = ref.read(recordsProvider).value?.settings ?? {};
+          return SetupPage(
+            language:
+                setupLanguage ?? settings['language'] as String? ?? 'system',
+            theme: setupTheme ?? settings['theme'] as String? ?? 'system',
+            onLanguageChanged: (value) => setState(() => setupLanguage = value),
+            onThemeChanged: (value) => setState(() => setupTheme = value),
+          );
+        },
+      ),
       ShellRoute(
         builder: (context, state, child) => _Frame(state.uri.path, child),
         routes: [
@@ -91,10 +136,30 @@ class _AppState extends ConsumerState<BadalatyApp> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _scheduleMidnight();
+    final initialRecords = ref.read(recordsProvider).value;
+    setupRequired = initialRecords == null ? null : needsSetup(initialRecords);
+    ref.listenManual(recordsProvider, (_, next) {
+      if (next case AsyncData(:final value)) {
+        final required = needsSetup(value);
+        if (setupRequired != required) {
+          setupRequired = required;
+          router.refresh();
+        }
+        if (!required) {
+          setupLanguage = null;
+          setupTheme = null;
+          final path = pendingWidgetRoute;
+          pendingWidgetRoute = null;
+          if (path != null) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) _route(path);
+            });
+          }
+        }
+        _publishWidgetsAfterFrame();
+      }
+    });
     if (Platform.isAndroid) {
-      ref.listenManual(recordsProvider, (_, next) {
-        if (next is AsyncData) _publishWidgetsAfterFrame();
-      }, fireImmediately: true);
       platformChannel.setMethodCallHandler((call) async {
         if (call.method == 'route' && mounted) {
           _route(call.arguments as String?);
@@ -108,11 +173,17 @@ class _AppState extends ConsumerState<BadalatyApp> with WidgetsBindingObserver {
   }
 
   void _route(String? path) {
+    if (path == null) return;
+    final records = ref.read(recordsProvider).value;
+    if (records == null || needsSetup(records)) {
+      pendingWidgetRoute = path;
+      return;
+    }
     if (path == '/history' || path == '/') {
-      router.go(path!);
+      router.go(path);
     } else if (path == '/entry/travel' || path == '/add') {
       router.go('/');
-      router.push(path!);
+      router.push(path);
     }
   }
 
@@ -140,6 +211,9 @@ class _AppState extends ConsumerState<BadalatyApp> with WidgetsBindingObserver {
     }
   }
 
+  @override
+  void didChangePlatformBrightness() => _publishWidgetsAfterFrame();
+
   void _publishWidgetsAfterFrame() {
     if (!Platform.isAndroid) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -166,7 +240,9 @@ class _AppState extends ConsumerState<BadalatyApp> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     final records = ref.watch(recordsProvider).value;
     final settings = records?.settings ?? {};
-    final language = settings['language'];
+    final inSetup = records != null && needsSetup(records);
+    final language = (inSetup ? setupLanguage : null) ?? settings['language'];
+    final theme = (inSetup ? setupTheme : null) ?? settings['theme'];
     final arabic =
         language == 'ar' ||
         ((language == null || language == 'system') &&
@@ -188,7 +264,7 @@ class _AppState extends ConsumerState<BadalatyApp> with WidgetsBindingObserver {
           : null,
       theme: badalatyTheme(Brightness.light, arabic: arabic),
       darkTheme: badalatyTheme(Brightness.dark, arabic: arabic),
-      themeMode: switch (settings['theme']) {
+      themeMode: switch (theme) {
         'light' => ThemeMode.light,
         'dark' => ThemeMode.dark,
         _ => ThemeMode.system,

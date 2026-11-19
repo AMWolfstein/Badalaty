@@ -1,12 +1,12 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/widget_root" android:layout_width="match_parent" android:layout_height="match_parent"
-    android:background="@drawable/widget_light" android:orientation="vertical" android:padding="9dp">
+    android:background="@drawable/widget_system" android:orientation="vertical" android:padding="9dp">
     <LinearLayout
         android:layout_width="match_parent" android:layout_height="wrap_content"
         android:gravity="center_vertical" android:orientation="horizontal">
         <FrameLayout
             android:id="@+id/widget_mark" android:layout_width="23dp" android:layout_height="23dp"
-            android:background="@drawable/widget_mark_light" android:importantForAccessibility="no">
+            android:background="@drawable/widget_mark_system" android:importantForAccessibility="no">
             <ImageView
                 android:id="@+id/widget_mark_icon" android:layout_width="15dp" android:layout_height="15dp"
                 android:layout_gravity="center" android:src="@drawable/widget_ic_wallet" />
@@ -62,7 +62,7 @@
         android:orientation="horizontal">
         <LinearLayout
             android:id="@+id/widget_add" android:layout_width="0dp" android:layout_weight="1"
-            android:layout_height="36dp" android:background="@drawable/widget_primary_light"
+            android:layout_height="36dp" android:background="@drawable/widget_primary_system"
             android:gravity="center" android:orientation="horizontal" android:paddingHorizontal="3dp">
             <ImageView
                 android:id="@+id/widget_add_icon" android:layout_width="13dp" android:layout_height="13dp"
@@ -76,7 +76,7 @@
         <FrameLayout android:layout_width="4dp" android:layout_height="1dp" />
         <LinearLayout
             android:id="@+id/widget_history" android:layout_width="0dp" android:layout_weight="1"
-            android:layout_height="36dp" android:background="@drawable/widget_secondary_light"
+            android:layout_height="36dp" android:background="@drawable/widget_secondary_system"
             android:gravity="center" android:orientation="horizontal" android:paddingHorizontal="3dp">
             <ImageView
                 android:id="@+id/widget_history_icon" android:layout_width="13dp" android:layout_height="13dp"

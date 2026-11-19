@@ -1,0 +1,6 @@
+<resources>
+    <item type="drawable" name="widget_system">@drawable/widget_light</item>
+    <item type="drawable" name="widget_mark_system">@drawable/widget_mark_light</item>
+    <item type="drawable" name="widget_primary_system">@drawable/widget_primary_light</item>
+    <item type="drawable" name="widget_secondary_system">@drawable/widget_secondary_light</item>
+</resources>

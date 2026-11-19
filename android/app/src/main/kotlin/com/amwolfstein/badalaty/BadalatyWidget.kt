@@ -85,21 +85,22 @@ object WidgetData {
         val locale = locale(context, data)
         val labels = strings(context, locale)
         val today = data.optJSONObject("days")?.optJSONObject(key())
-        val dark = when (data.optString("theme")) {
+        val theme = data.optString("theme", "system")
+        val followsDevice = theme != "light" && theme != "dark"
+        val dark = when (theme) {
             "light" -> false
             "dark" -> true
             else -> context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
         }
         val layout = if (expanded) R.layout.badalaty_widget_expanded else R.layout.badalaty_widget_compact
         val view = RemoteViews(context.packageName, layout)
-        val ink = if (dark) 0xFFF0F6FD.toInt() else 0xFF142A45.toInt()
-        val muted = if (dark) 0xFFAEC2DA.toInt() else 0xFF435E76.toInt()
-        val mark = if (dark) 0xFF9AE5FF.toInt() else 0xFF075A87.toInt()
-        val actionInk = if (dark) 0xFF102B40.toInt() else 0xFFFFFFFF.toInt()
-        view.setInt(R.id.widget_root, "setBackgroundResource", if (dark) R.drawable.widget_dark else R.drawable.widget_light)
+        val appearance = WidgetAppearance(followsDevice, dark)
+        view.setInt(R.id.widget_root, "setBackgroundResource",
+            appearance.drawable(R.drawable.widget_light, R.drawable.widget_dark, R.drawable.widget_system))
         view.setInt(R.id.widget_root, "setLayoutDirection", if (locale.language == "ar") View.LAYOUT_DIRECTION_RTL else View.LAYOUT_DIRECTION_LTR)
-        view.setInt(R.id.widget_mark, "setBackgroundResource", if (dark) R.drawable.widget_mark_dark else R.drawable.widget_mark_light)
-        view.setInt(R.id.widget_mark_icon, "setColorFilter", mark)
+        view.setInt(R.id.widget_mark, "setBackgroundResource",
+            appearance.drawable(R.drawable.widget_mark_light, R.drawable.widget_mark_dark, R.drawable.widget_mark_system))
+        appearance.color(view, R.id.widget_mark_icon, "setColorFilter", 0xFF075A87.toInt(), 0xFF9AE5FF.toInt())
 
         val pattern = DateFormat.getBestDateTimePattern(locale, if (expanded) "EEE d MMM" else "d MMM")
         val date = SimpleDateFormat(pattern, locale).format(Calendar.getInstance().time)
@@ -109,15 +110,19 @@ object WidgetData {
         view.setTextViewText(R.id.widget_metric, labels.getString(R.string.widget_today_amount))
         view.setTextViewText(R.id.widget_amount, amount)
         view.setTextViewText(R.id.widget_currency, labels.getString(R.string.widget_egp))
-        view.setTextColor(R.id.widget_amount, ink)
+        val lightInk = 0xFF142A45.toInt()
+        val darkInk = 0xFFF0F6FD.toInt()
+        val lightMuted = 0xFF435E76.toInt()
+        val darkMuted = 0xFFAEC2DA.toInt()
+        appearance.color(view, R.id.widget_amount, "setTextColor", lightInk, darkInk)
         for (id in listOf(R.id.widget_date, R.id.widget_metric, R.id.widget_currency)) {
-            view.setTextColor(id, muted)
+            appearance.color(view, id, "setTextColor", lightMuted, darkMuted)
         }
 
         view.bindAction(R.id.widget_add, R.id.widget_add_label, R.id.widget_add_icon,
             labels.getString(R.string.widget_add),
-            if (dark) R.drawable.widget_primary_dark else R.drawable.widget_primary_light,
-            actionInk, open(context, "/add", 1))
+            appearance.drawable(R.drawable.widget_primary_light, R.drawable.widget_primary_dark, R.drawable.widget_primary_system),
+            appearance, 0xFFFFFFFF.toInt(), 0xFF102B40.toInt(), open(context, "/add", 1))
         if (expanded) {
             val count = today?.optInt("count") ?: 0
             val assignment = today?.optString("assignment").orEmpty()
@@ -125,23 +130,42 @@ object WidgetData {
                 else labels.getString(R.string.widget_none)
             view.setTextViewText(R.id.widget_brand, labels.getString(R.string.app_name))
             view.setTextViewText(R.id.widget_details, if (assignment.isEmpty()) countText else "$assignment\n$countText")
-            view.setTextColor(R.id.widget_brand, ink)
-            view.setTextColor(R.id.widget_details, muted)
-            view.setInt(R.id.widget_divider, "setBackgroundColor", if (dark) 0xFF304560.toInt() else 0xFFD4E1EE.toInt())
+            appearance.color(view, R.id.widget_brand, "setTextColor", lightInk, darkInk)
+            appearance.color(view, R.id.widget_details, "setTextColor", lightMuted, darkMuted)
+            appearance.color(view, R.id.widget_divider, "setBackgroundColor", 0xFFD4E1EE.toInt(), 0xFF304560.toInt())
 
-            val secondary = if (dark) R.drawable.widget_secondary_dark else R.drawable.widget_secondary_light
+            val secondary = appearance.drawable(
+                R.drawable.widget_secondary_light, R.drawable.widget_secondary_dark, R.drawable.widget_secondary_system)
             view.bindAction(R.id.widget_history, R.id.widget_history_label, R.id.widget_history_icon,
-                labels.getString(R.string.widget_history), secondary, ink, open(context, "/history", 3))
+                labels.getString(R.string.widget_history), secondary, appearance, lightInk, darkInk,
+                open(context, "/history", 3))
         }
         manager.updateAppWidget(ids, view)
     }
 
+    private class WidgetAppearance(val followsDevice: Boolean, val dark: Boolean) {
+        fun drawable(light: Int, night: Int, system: Int) = when {
+            followsDevice -> system
+            dark -> night
+            else -> light
+        }
+
+        fun color(view: RemoteViews, id: Int, method: String, light: Int, night: Int) {
+            if (followsDevice && Build.VERSION.SDK_INT >= 31) {
+                view.setColorInt(id, method, light, night)
+            } else {
+                view.setInt(id, method, if (dark) night else light)
+            }
+        }
+    }
+
     private fun RemoteViews.bindAction(id: Int, labelId: Int, iconId: Int, text: String,
-                                       background: Int, ink: Int, intent: PendingIntent) {
+                                       background: Int, appearance: WidgetAppearance,
+                                       lightInk: Int, darkInk: Int, intent: PendingIntent) {
         setInt(id, "setBackgroundResource", background)
         setTextViewText(labelId, text)
-        setTextColor(labelId, ink)
-        setInt(iconId, "setColorFilter", ink)
+        appearance.color(this, labelId, "setTextColor", lightInk, darkInk)
+        appearance.color(this, iconId, "setColorFilter", lightInk, darkInk)
         setContentDescription(id, text)
         setOnClickPendingIntent(id, intent)
     }
