@@ -276,10 +276,16 @@ class GlassHeader extends StatelessWidget {
 }
 
 class GlassContentCard extends StatelessWidget {
-  const GlassContentCard({required this.child, this.color, super.key});
+  const GlassContentCard({
+    required this.child,
+    this.color,
+    this.margin = const EdgeInsets.only(bottom: glassItemGap),
+    super.key,
+  });
 
   final Widget child;
   final Color? color;
+  final EdgeInsetsGeometry margin;
 
   @override
   Widget build(BuildContext context) {
@@ -296,7 +302,7 @@ class GlassContentCard extends StatelessWidget {
               : Colors.white,
         ),
       ),
-      margin: const EdgeInsets.only(bottom: glassItemGap),
+      margin: margin,
       padding: EdgeInsets.zero,
       child: child,
     );
@@ -360,17 +366,30 @@ class GlassToggleRow extends StatelessWidget {
   final Widget? subtitle;
 
   @override
-  Widget build(BuildContext context) => GlassRow(
-    leading: secondary,
-    title: Text(label),
-    subtitle: subtitle,
-    onTap: onChanged == null ? null : () => onChanged!(!value),
-    trailing: liquid.GlassSwitch(
-      value: value,
-      onChanged: onChanged,
-      semanticLabel: label,
-    ),
-  );
+  Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return GlassRow(
+      leading: secondary,
+      title: Text(label),
+      subtitle: subtitle,
+      onTap: onChanged == null ? null : () => onChanged!(!value),
+      trailing: liquid.GlassSwitch(
+        value: value,
+        onChanged: onChanged,
+        semanticLabel: label,
+        settings: usesPremiumGlass(context)
+            ? liquid.LiquidGlassSettings.ios27Indicator.copyWith(
+                glassColor: dark
+                    ? const Color(0x36DBEEFF)
+                    : const Color(0x28FFFFFF),
+                refractiveIndex: 1.3,
+                rimLight: dark ? 1.24 : 1.14,
+                rimShade: dark ? .32 : .65,
+              )
+            : null,
+      ),
+    );
+  }
 }
 
 class GlassAction extends StatelessWidget {

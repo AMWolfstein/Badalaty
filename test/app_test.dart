@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:badalaty/forms.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart' as liquid;
 import 'package:badalaty/widgets/glass_design.dart';
@@ -6,6 +8,8 @@ import 'package:badalaty/data/store.dart';
 import 'package:badalaty/main.dart';
 import 'package:badalaty/records/add_record.dart';
 import 'package:badalaty/history/history.dart';
+import 'package:badalaty/updates/github_updates.dart';
+import 'package:badalaty/updates/update_dialog.dart';
 import 'package:badalaty/widgets/glass_navigation_bar.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,6 +17,75 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
 void main() {
+  for (final outcome in ['available', 'up to date', 'offline']) {
+    testWidgets('startup update check is silent until ready ($outcome)', (
+      tester,
+    ) async {
+      final db = Store(NativeDatabase.memory());
+      addTearDown(db.close);
+      await db.save('settings', {'name': 'Owner', 'language': 'ar'});
+      final checked = Completer<UpdateCheck>();
+      var calls = 0;
+      final state = ProviderContainer(
+        overrides: [
+          storeProvider.overrideWithValue(db),
+          startupUpdateCheckProvider.overrideWithValue(() {
+            calls++;
+            return checked.future;
+          }),
+        ],
+      );
+      addTearDown(state.dispose);
+      await tester.pumpWidget(
+        UncontrolledProviderScope(container: state, child: const BadalatyApp()),
+      );
+      await tester.runAsync(() => state.read(recordsProvider.future));
+      await tester.pumpAndSettle();
+
+      final dialog = find.byType(UpdateDialog);
+      expect(calls, 1);
+      expect(dialog, findsNothing);
+      expect(find.byType(GlassNavigationBar), findsOneWidget);
+
+      if (outcome == 'offline') {
+        checked.completeError(StateError('Offline'));
+      } else {
+        checked.complete((
+          installed: '1.0.18',
+          supported: true,
+          release: outcome == 'available'
+              ? GithubRelease.fromJson({
+                  'package': 'com.amwolfstein.badalaty',
+                  'version': '1.0.19',
+                  'build': 20,
+                  'sha256': 'a' * 64,
+                })
+              : null,
+        ));
+      }
+      await tester.pumpAndSettle();
+
+      if (outcome == 'available') {
+        expect(dialog, findsOneWidget);
+        expect(find.text('الإصدار 1.0.19 متاح'), findsOneWidget);
+        expect(find.text('تنزيل وتثبيت'), findsOneWidget);
+        await tester.tap(find.text('إلغاء'));
+        await tester.pumpAndSettle();
+      }
+      expect(dialog, findsNothing);
+      await tester.tap(
+        find.descendant(
+          of: find.byType(GlassNavigationBar),
+          matching: find.bySemanticsLabel('التقارير'),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(calls, 1);
+      expect(dialog, findsNothing);
+      await tester.pumpWidget(const SizedBox());
+    });
+  }
+
   testWidgets('switches iOS 27 glass directly between Premium and Standard', (
     tester,
   ) async {
@@ -36,6 +109,12 @@ void main() {
       expect(glass.light.quality, quality);
       expect(glass.dark.quality, quality);
       expect(find.byType(liquid.GlassAdaptiveScope), findsNothing);
+      final premium = quality == liquid.GlassQuality.premium;
+      final tabs = tester.widget<liquid.GlassTabBar>(
+        find.descendant(of: bar, matching: find.byType(liquid.GlassTabBar)),
+      );
+      expect(tabs.settings != null, premium);
+      expect(tabs.indicatorSettings != null, premium);
     }
 
     expectQuality(liquid.GlassQuality.premium);
@@ -58,7 +137,9 @@ void main() {
       await tester.tap(toggle.hitTestable());
       await tester.pumpAndSettle();
       expect((await db.readAll()).settings['premiumGlass'], expected);
-      expect(tester.widget<liquid.GlassSwitch>(toggle).value, expected);
+      final glassSwitch = tester.widget<liquid.GlassSwitch>(toggle);
+      expect(glassSwitch.value, expected);
+      expect(glassSwitch.settings != null, expected);
       expectQuality(
         expected ? liquid.GlassQuality.premium : liquid.GlassQuality.standard,
       );
