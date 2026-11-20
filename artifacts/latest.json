@@ -1,10 +1,10 @@
 {
   "package": "com.amwolfstein.badalaty",
-  "version": "1.0.17",
-  "build": 18,
-  "sha256": "bf7607783fe1c9bba33d05a90aba28be7e59202ec464731c10427d76b4004778",
+  "version": "1.0.18",
+  "build": 19,
+  "sha256": "81195a8da92d2570277b49bfd8192aa032ef8fa2a59fc1fb1151c47199a58fc7",
   "notes": {
-    "ar": "تحسين شكل حقول التاريخ وإظهار تاريخ البداية والنهاية في التقارير.",
-    "en": "Improve the layout and labels of report date fields."
+    "ar": "فحص تلقائي لتحديثات GitHub عند فتح التطبيق، وتحسين شكل وحركة البار السفلي والقوائم المنسدلة ومفاتيح التبديل في وضع Liquid Glass Premium.",
+    "en": "Automatically check GitHub for updates on launch. Refine the bottom bar, dropdowns, and switches in Liquid Glass Premium."
   }
 }
