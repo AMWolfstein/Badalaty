@@ -6,6 +6,7 @@ import 'allowances/calculation.dart';
 import 'data/store.dart';
 import 'l10n/labels.dart';
 import 'widgets/glass_design.dart';
+import 'widgets/glass_navigation_bar.dart';
 
 Future<bool> confirm(BuildContext context, String message) async =>
     await liquid.GlassDialog.show<bool>(
@@ -136,8 +137,10 @@ class Choice<T> extends StatelessWidget {
     final selected = items.containsKey(value) ? value : items.keys.firstOrNull;
     final text = items[selected] ?? label;
     final scheme = Theme.of(context).colorScheme;
+    final premium = items.isNotEmpty && usesPremiumGlass(context);
     final trigger = GlassContentCard(
       color: compact ? scheme.primaryContainer : null,
+      margin: EdgeInsets.only(bottom: premium ? 0 : glassItemGap),
       child: compact
           ? Padding(
               padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 9),
@@ -163,7 +166,7 @@ class Choice<T> extends StatelessWidget {
             ),
     );
     if (items.isEmpty) return trigger;
-    return LayoutBuilder(
+    final menu = LayoutBuilder(
       builder: (context, constraints) => liquid.GlassMenu(
         trigger: trigger,
         semanticLabel: '$label, $text',
@@ -176,19 +179,49 @@ class Choice<T> extends StatelessWidget {
         autoAdjustToScreen: true,
         maxStackHeight: 330,
         menuPadding: const EdgeInsets.all(7),
-        selectionColor: scheme.primaryContainer.withValues(alpha: .8),
+        morphSpeed: premium ? liquid.MorphSpeed.fast : liquid.MorphSpeed.normal,
+        selectionColor: scheme.primaryContainer.withValues(
+          alpha: premium ? .55 : .8,
+        ),
         items: [
           for (final item in items.entries)
             liquid.GlassMenuItem(
               title: item.value,
               semanticsSelected: item.key == selected,
               trailing: item.key == selected
-                  ? Icon(Icons.check_rounded, color: scheme.primary, size: 19)
+                  ? _ChoiceCheck(premium: premium)
                   : null,
               onTap: () => onChange(item.key),
             ),
         ],
       ),
+    );
+    // Keep the visual gap outside the trigger's morph bounds.
+    return premium
+        ? Padding(
+            padding: const EdgeInsets.only(bottom: glassItemGap),
+            child: menu,
+          )
+        : menu;
+  }
+}
+
+class _ChoiceCheck extends StatelessWidget {
+  const _ChoiceCheck({required this.premium});
+
+  final bool premium;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final check = Icon(Icons.check_rounded, color: scheme.primary, size: 19);
+    if (!premium) return check;
+    return DecoratedBox(
+      decoration: ShapeDecoration(
+        color: scheme.primaryContainer.withValues(alpha: .72),
+        shape: const StadiumBorder(),
+      ),
+      child: Padding(padding: const EdgeInsets.all(4), child: check),
     );
   }
 }

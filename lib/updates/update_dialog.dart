@@ -5,7 +5,27 @@ import '../widgets/glass_design.dart';
 import 'github_updates.dart';
 
 class UpdateDialog extends StatefulWidget {
-  const UpdateDialog({super.key});
+  const UpdateDialog._(this.initialCheck);
+
+  final UpdateCheck? initialCheck;
+  static final _openNavigators = <NavigatorState>{};
+
+  static Future<void> show(
+    BuildContext context, {
+    UpdateCheck? initialCheck,
+  }) async {
+    final navigator = Navigator.of(context, rootNavigator: true);
+    if (!_openNavigators.add(navigator)) return;
+    try {
+      await showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => UpdateDialog._(initialCheck),
+      );
+    } finally {
+      _openNavigators.remove(navigator);
+    }
+  }
 
   @override
   State<UpdateDialog> createState() => _UpdateDialogState();
@@ -13,7 +33,9 @@ class UpdateDialog extends StatefulWidget {
 
 class _UpdateDialogState extends State<UpdateDialog> {
   final _updates = GithubUpdates();
-  late Future<UpdateCheck> _check = _updates.check();
+  late Future<UpdateCheck>? _check = widget.initialCheck == null
+      ? _updates.check()
+      : null;
   bool _busy = false;
   bool _downloaded = false;
   bool _needsPermission = false;
@@ -54,6 +76,7 @@ class _UpdateDialogState extends State<UpdateDialog> {
     final l = context.l;
     return FutureBuilder<UpdateCheck>(
       future: _check,
+      initialData: widget.initialCheck,
       builder: (context, snapshot) {
         final checked = snapshot.data;
         final release = checked?.release;
@@ -67,7 +90,7 @@ class _UpdateDialogState extends State<UpdateDialog> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (snapshot.connectionState != ConnectionState.done) ...[
+                if (snapshot.connectionState == ConnectionState.waiting) ...[
                   Text(l.checkingForUpdates),
                   const SizedBox(height: 12),
                   const LinearProgressIndicator(),

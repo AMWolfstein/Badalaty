@@ -284,11 +284,7 @@ class SettingsPage extends ConsumerWidget {
           GlassRow(
             leading: const GlassIcon(Icons.system_update_outlined),
             title: Text(l.appUpdates),
-            onTap: () => showDialog<void>(
-              context: context,
-              barrierDismissible: false,
-              builder: (_) => const UpdateDialog(),
-            ),
+            onTap: () => UpdateDialog.show(context),
           ),
       ],
     };

@@ -29,6 +29,8 @@ import 'reports/reports.dart';
 import 'records/add_record.dart';
 import 'settings/settings.dart';
 import 'settings/setup.dart';
+import 'updates/github_updates.dart';
+import 'updates/update_dialog.dart';
 import 'widgets/glass_navigation_bar.dart';
 import 'widgets/glass_design.dart';
 import 'widgets/platform.dart';
@@ -59,12 +61,17 @@ final _glassThemes = {
 
 const _sections = ['/', '/history', '/assignments', '/reports', '/settings'];
 
+final startupUpdateCheckProvider = Provider<Future<UpdateCheck> Function()?>(
+  (_) => Platform.isAndroid ? GithubUpdates().check : null,
+);
+
 class _AppState extends ConsumerState<BadalatyApp> with WidgetsBindingObserver {
   String? setupLanguage;
   String? setupTheme;
   String? pendingWidgetRoute;
   bool? setupRequired;
   bool widgetPublishScheduled = false;
+  bool _startupUpdateStarted = false;
   final themes = <bool, (ThemeData, ThemeData)>{};
 
   bool needsSetup(List<Record> records) =>
@@ -162,6 +169,7 @@ class _AppState extends ConsumerState<BadalatyApp> with WidgetsBindingObserver {
     _scheduleMidnight();
     final initialRecords = ref.read(recordsProvider).value;
     setupRequired = initialRecords == null ? null : needsSetup(initialRecords);
+    if (setupRequired == false) unawaited(_startUpdateCheck());
     ref.listenManual(recordsProvider, (_, next) {
       if (next case AsyncData(:final value)) {
         final required = needsSetup(value);
@@ -170,6 +178,7 @@ class _AppState extends ConsumerState<BadalatyApp> with WidgetsBindingObserver {
           router.refresh();
         }
         if (!required) {
+          unawaited(_startUpdateCheck());
           setupLanguage = null;
           setupTheme = null;
           final path = pendingWidgetRoute;
@@ -193,6 +202,33 @@ class _AppState extends ConsumerState<BadalatyApp> with WidgetsBindingObserver {
         final path = await platformChannel.invokeMethod<String>('initialRoute');
         if (mounted) _route(path);
       });
+    }
+  }
+
+  Future<void> _startUpdateCheck() async {
+    if (_startupUpdateStarted) return;
+    final check = ref.read(startupUpdateCheckProvider);
+    if (check == null) return;
+    _startupUpdateStarted = true;
+
+    await WidgetsBinding.instance.endOfFrame;
+    if (!mounted) return;
+
+    final UpdateCheck result;
+    try {
+      result = await check();
+    } catch (_) {
+      return;
+    }
+    if (!mounted ||
+        setupRequired != false ||
+        !result.supported ||
+        result.release == null) {
+      return;
+    }
+    final appContext = router.routerDelegate.navigatorKey.currentContext;
+    if (appContext != null && appContext.mounted) {
+      await UpdateDialog.show(appContext, initialCheck: result);
     }
   }
 
